@@ -1,0 +1,21 @@
+singleuser:
+  image:
+    # Get the latest image tag at:
+    # https://hub.docker.com/r/jupyter/datascience-notebook/tags/
+    # Inspect the Dockerfile at:
+    # https://github.com/jupyter/docker-stacks/tree/master/datascience-notebook/Dockerfile
+    name: jupyter/pyspark-notebook
+    tag: dc9744740e12
+  defaultUrl: "/lab"
+  extraEnv:
+    EDITOR: "vim"
+    
+hub:
+#  extraConfig:
+#    jupyterlab: |
+#      c.Spawner.cmd = ['jupyter-labhub']
+  extraConfig:
+    jupyterlab: |
+      c.Spawner.default_url = "/lab"      
+proxy:
+  secretToken: ""

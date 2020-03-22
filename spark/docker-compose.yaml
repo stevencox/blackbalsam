@@ -1,0 +1,95 @@
+version: '3.0'
+
+##################################################################################################
+#
+# 
+services:
+
+  # This is the bitnami spark container, a minimalist, ubuntu based, non-root image with
+  # good configuration options and support for recent spark versions.
+  spark:
+    image: heliumdatastage/spark
+    environment:
+      - SPARK_MODE="master"
+      - SPARK_MASTER_HOST="0.0.0.0"
+      - SPARK_RPC_AUTHENTICATION_ENABLED="no"
+      - SPARK_RPC_ENCRYPTION_ENABLED="no"
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED="no"
+      - SPARK_SSL_ENABLED="no"
+    ports:
+      - '${spark_master_ui_port}:8080'
+      - '${spark_master_port}:7077'
+
+  # The worker process uses the same image as the master and can be scaled up or down.
+  #
+  # Each replica must be able to connect to the master.
+  #   Note that the worker connects to the master using the URL:
+  #         spark://spark-${app_id}:${spark_master_port} 
+  #     The ${app_id} is a GUID assigned by the infrastructure for this instance.
+  #     The hostname of other containers in this app is given by <container>-${app_id}
+  #     The master is called spark and listens on port ${spark_master_port},
+  #         hence spark://spark-${app_id}:${spark_master_port}
+  # This container uses docker-compose metadata to specify deployment characteristics.
+  #   These include replicas, CPU and memory requirements, etc.
+  #   Number of instances is controlled by the cluster_worker_replicas setting.
+  #   
+  spark-worker:
+    image: heliumdatastage/spark
+    environment:
+      - SPARK_MODE="worker"
+      - SPARK_MASTER_URL="spark://spark:${spark_master_port}"
+      - SPARK_WORKER_MEMORY="${spark_worker_memory}"
+      - SPARK_WORKER_CORES="${spark_worker_cores}"
+      - SPARK_RPC_AUTHENTICATION_ENABLED="no"
+      - SPARK_RPC_ENCRYPTION_ENABLED="no"
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED="no"
+      - SPARK_SSL_ENABLED="no"
+#    deploy:
+#      mode: replicated
+#      replicas: "${cluster_worker_replicas}"
+#      resources:
+#        limits:
+#          cpus: "${cluster_worker_cores}"
+#          memory: ${cluster_worker_memory}
+#        reservations:
+#          cpus: "${cluster_worker_cores}"
+#          memory: ${cluster_worker_memory}
+#      restart_policy:
+#        condition: on-failure
+#        delay: 5s
+#        max_attempts: 5
+#        window: 60s
+
+  #################################################################################
+  ##
+  ## A graph database provides query over linked data to drive indexing.
+  ##
+  #################################################################################
+  neo4j:
+    image: bitnami/neo4j:3.5.14
+#    environment:
+#      - NEO4J_PASSWORD=$NEO4J_PASSWORD
+#      - NEO4J_HOST=$HOSTNAME
+#    volumes:
+#      - $NEO4J_DATA:/bitnami
+    ports:
+      - '7474:7474'
+      - '7473:7473'
+      - '7687:7687'
+          
+  #################################################################################
+  ##
+  ## A memory cache for results of high volume service requests.
+  ##
+  #################################################################################
+  redis:
+    image: 'bitnami/redis:5.0.8'
+    environment:
+#      - REDIS_PASSWORD=$REDIS_PASSWORD
+      - ALLOW_EMPTY_PASSWORD="yes"
+      - REDIS_DISABLE_COMMANDS="FLUSHDB,FLUSHALL"
+#    volumes:
+#      - $REDIS_DATA:/bitnami/redis/data
+    ports:
+      - '6379:6379'
+

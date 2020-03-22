@@ -1,0 +1,129 @@
+#!/bin/bash
+
+f () {
+├── bin
+│   ├── config.yaml
+│   ├── darwin-amd64
+│   │   ├── LICENSE
+│   │   ├── README.md
+│   │   ├── helm
+│   │   └── tiller
+│   ├── helm-v2.16.3-darwin-amd64.tar.gz
+│   ├── jib
+│   └── spark
+│       ├── docker-compose.yaml
+│       ├── gen
+│       │   ├── jupyter-deployment.yaml
+│       │   ├── jupyter-service.yaml
+│       │   ├── spark-deployment.yaml
+│       │   ├── spark-service.yaml
+│       │   └── spark-worker-deployment.yaml
+│       └── spunk
+}
+
+#set -x
+set -e
+
+export RELEASE=jib
+export NAMESPACE=jib
+export VERSION=0.8.2
+export DIST=bin
+export PATH=$PWD/$DIST/darwin-amd64:$PATH
+export helm_dist=helm-v2.16.3-darwin-amd64.tar.gz
+export helm_url=https://get.helm.sh/$helm_dist
+if [ ! -f $HOME/.jib ]; then
+    echo $HOME/.jib must exist and contain a variable called jupyterhub_secret_token
+    exit 1
+fi
+source $HOME/.jib
+
+make_namespace () {
+    if [ "$(kubectl get namespaces | grep -c $NAMESPACE)" == 0 ]; then
+        kubectl create namespace $NAMESPACE
+    fi
+}
+spark () {
+    conf () {
+        spark/spunk gen
+    }
+    up () {
+        if [ "$(kubectl get -n $NAMESPACE list deployment 2>&1 | grep -c 1/1 | grep -v 'No resources')" != 0 ]; then
+            echo spark is already running. use down first.
+        else
+            make_namespace
+            spark/spunk up
+        fi
+    }
+    down () {
+        spark/spunk down
+    }
+    $*
+}
+jupyterhub () {
+    conf () {
+        mkdir -p $DIST
+        wget --timestamping \
+             --directory-prefix=$DIST \
+             $helm_url
+        
+        if [ ! -d $PWD/darwin-amd64 ]; then
+            pushd $DIST
+            tar xvzf $helm_dist
+            popd
+        fi    
+        if [ "$(kubectl get serviceaccount -n kube-system tiller -o yaml | grep -c tiller)" == 0 ]; then
+            kubectl --namespace kube-system create serviceaccount tiller
+        fi
+        if [ "$(kubectl get clusterrolebinding -n kube-system tiller -o yaml | grep -c tiller)" == 0 ]; then
+            kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+        fi
+        helm version
+        helm repo add jupyterhub https://jupyterhub.github.io/helm-chart/
+        helm repo update
+        helm init --service-account tiller --history-max 100 --wait
+        kubectl patch deployment tiller-deploy \
+                --namespace=kube-system --type=json \
+                --patch='[{"op": "add", "path": "/spec/template/spec/containers/0/command", "value": ["/tiller", "--listen=localhost:44134"]}]'
+    }
+    up () {
+        helm version
+        cp config.yaml.template config.yaml
+        yaml-set \
+            --change="proxy.secretToken" \
+            --value=$jupyterhub_secret_token \
+            -F dquote \
+            config.yaml
+        helm upgrade --install $RELEASE jupyterhub/jupyterhub \
+             --namespace $NAMESPACE  \
+             --version=$VERSION \
+             --values config.yaml
+    }
+    down () {
+        helm version
+        helm delete $RELEASE --purge
+    }
+    forward () {
+        kubectl port-forward -n $NAMESPACE service/proxy-public 8888:80 --address 0.0.0.0
+    }
+    
+    $*
+}
+
+up () {
+    spark up
+    jupyterhub up
+}
+down () {
+    kubectl delete namespace $NAMESPACE
+}
+status () {
+    for kind in deployment pod service pvc pv; do
+        message=$( echo $kind | awk '{ print toupper($0) }' )
+        echo $message
+        kubectl get -n $NAMESPACE $kind 2>&1 | sed "s,^,   ,g"
+    done
+}
+
+$*
+
+exit 0
