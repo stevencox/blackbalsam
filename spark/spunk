@@ -3,6 +3,12 @@
 set -x
 set -e
 
+
+# ~/.jib
+# kompose
+# yamlpath
+
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 SPUNK_HOME=$PWD/$( dirname $0 )
@@ -30,6 +36,24 @@ finalize () {
         --change=spec.replicas \
         --value=3 \
         gen/spark-worker-deployment.yaml
+
+    yaml-set \
+        --change=spec.template.spec.containers[0].resources.limits.cpu \
+        --value=1 \
+        gen/spark-worker-deployment.yaml
+    yaml-set \
+        --change=spec.template.spec.containers[0].resources.limits.memory \
+        --value=128Mi \
+        gen/spark-worker-deployment.yaml
+    yaml-set \
+        --change=spec.template.spec.containers[0].resources.requests.cpu \
+        --value=1 \
+        gen/spark-worker-deployment.yaml
+    yaml-set \
+        --change=spec.template.spec.containers[0].resources.requests.memory \
+        --value=128Mi \
+        gen/spark-worker-deployment.yaml
+
     # Fix quoting
     for file in gen/*.yaml; do
         echo updating quoting in $file
@@ -37,6 +61,9 @@ finalize () {
     done
 }
 up () {
+    if [ ! -d $SPUNK_HOME/gen ]; then
+        gen
+    fi
     kubectl apply -n $NAMESPACE -f gen/
 }
 down () {
@@ -44,6 +71,10 @@ down () {
         gen
     fi
     kubectl delete -n $NAMESPACE -f gen/
+}
+restart () {
+    down
+    up
 }
 clean () {
     rm -rf $SPUNK_HOME/gen

@@ -4,11 +4,20 @@ singleuser:
     # https://hub.docker.com/r/jupyter/datascience-notebook/tags/
     # Inspect the Dockerfile at:
     # https://github.com/jupyter/docker-stacks/tree/master/datascience-notebook/Dockerfile
-    name: jupyter/pyspark-notebook
+    name: jupyter/all-spark-notebook
     tag: dc9744740e12
   defaultUrl: "/lab"
-  extraEnv:
-    EDITOR: "vim"
+#  extraEnv:
+#    SPARK_OPTS: >-
+#      --deploy-mode=client
+#      --master spark://spark:7077
+#      --conf spark.kubernetes.namespace=`cat /var/run/secrets//kubernetes.io/serviceaccount/namespace`
+#      --conf spark.driver.pod.name=${HOSTNAME}
+#      --conf spark.driver.host=`hostname -i`
+#      --conf spark.driver.port=19998
+#      --conf spark.kubernetes.container.image=heliumdatastage/spark
+#      --conf spark.kubernetes.authenticate.oauthTokenFile=/var/run/secrets/kubernetes.io/serviceaccount/token
+#      --conf spark.kubernetes.authenticate.caCertFile=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
     
 hub:
 #  extraConfig:

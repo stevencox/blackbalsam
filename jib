@@ -102,6 +102,10 @@ jupyterhub () {
         helm version
         helm delete $RELEASE --purge
     }
+    restart () {
+        down
+        up
+    }
     forward () {
         kubectl port-forward -n $NAMESPACE service/proxy-public 8888:80 --address 0.0.0.0
     }
@@ -115,6 +119,10 @@ up () {
 }
 down () {
     kubectl delete namespace $NAMESPACE
+}
+restart () {
+    down
+    up
 }
 status () {
     for kind in deployment pod service pvc pv; do
