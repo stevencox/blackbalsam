@@ -4,8 +4,9 @@ singleuser:
     # https://hub.docker.com/r/jupyter/datascience-notebook/tags/
     # Inspect the Dockerfile at:
     # https://github.com/jupyter/docker-stacks/tree/master/datascience-notebook/Dockerfile
-    name: jupyter/all-spark-notebook
-    tag: dc9744740e12
+    name: "heliumdatastage/all-spark-notebook"
+#    tag: dc9744740e12
+    tag: "v0.1"
   defaultUrl: "/lab"
 #  extraEnv:
 #    SPARK_OPTS: >-

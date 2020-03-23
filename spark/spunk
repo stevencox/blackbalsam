@@ -43,7 +43,7 @@ finalize () {
         gen/spark-worker-deployment.yaml
     yaml-set \
         --change=spec.template.spec.containers[0].resources.limits.memory \
-        --value=128Mi \
+        --value=512Mi \
         gen/spark-worker-deployment.yaml
     yaml-set \
         --change=spec.template.spec.containers[0].resources.requests.cpu \
@@ -51,7 +51,7 @@ finalize () {
         gen/spark-worker-deployment.yaml
     yaml-set \
         --change=spec.template.spec.containers[0].resources.requests.memory \
-        --value=128Mi \
+        --value=512Mi \
         gen/spark-worker-deployment.yaml
 
     # Fix quoting
