@@ -132,6 +132,26 @@ status () {
     done
 }
 
+minio () {
+    up () {
+        for element in pvc deployment service; do
+            kubectl create --namespace=$NAMESPACE \
+                    -f https://github.com/minio/minio/blob/master/docs/orchestration/kubernetes/minio-standalone-${element}.yaml?raw=true
+        done
+    }
+    down () {
+        for element in pvc deployment service; do
+            kubectl delete  --namespace=$NAMESPACE \
+                    -f https://github.com/minio/minio/blob/master/docs/orchestration/kubernetes/minio-standalone-${element}.yaml?raw=true
+        done
+    }
+    not () {
+        kubectl create -f https://github.com/minio/minio/blob/master/docs/orchestration/kubernetes/minio-standalone-pvc.yaml?raw=true
+        kubectl create -f https://github.com/minio/minio/blob/master/docs/orchestration/kubernetes/minio-standalone-deployment.yaml?raw=true
+        kubectl create -f https://github.com/minio/minio/blob/master/docs/orchestration/kubernetes/minio-standalone-service.yaml?raw=true
+    }
+    $*
+}
 $*
 
 exit 0
