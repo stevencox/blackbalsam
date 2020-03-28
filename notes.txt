@@ -1,0 +1,152 @@
+import socket
+import os
+from pyspark import SparkConf
+from pyspark import SparkContext
+from pyspark.sql import SparkSession
+
+master = "spark://spark:7077"
+driver_host = socket.gethostbyname(socket.gethostname())
+print (f"master:{master}\ndriver_host:{driver_host}")
+
+sc = SparkContext (conf=SparkConf().setAll ([
+    ("spark.master",               master),
+    ("spark.driver.host",          driver_host),
+    ("spark.app.name",             "jib"),
+    ("spark.submit.deployMode",    "client"),
+    ("spark.driver.memory",        "1g"),    
+    ("spark.executor.memory",      "512M")
+]))
+r = sc.parallelize ([0, 8, 4]).map(lambda v: v * 6).collect ()
+spark = SparkSession (sc)
+print (r)
+
+
+import requests
+
+url = "https://ai2-semanticscholar-cord-19.s3-us-west-2.amazonaws.com/2020-03-20/noncomm_use_subset.tar.gz"
+covid_19__non_comm_use_tgz = 'noncomm_use_subset.tar.gz'
+response = requests.get(url, stream=True)
+if response.status_code == 200:
+    with open(covid_19__non_comm_use_tgz, 'wb') as f:
+        f.write(response.raw.read())
+
+
+
+
+
+
+import traceback
+from minio import Minio
+from minio.error import ResponseError
+
+class Storage:
+    """ Storage abstraction. """
+    def __init__(self, 
+                 endpoint="minio:9000",
+                 access_key="minio", 
+                 secret_key="minio123", 
+                 secure=False
+    ):    
+        """ Port is required. """
+        self.minio_endpoint = "minio:9000"
+        self.minio_access_key = "minio"
+        self.minio_secret_key = "minio123"
+        print (f"minio_endpoint:{self.minio_endpoint}")
+    
+        self.client = Minio(
+            self.minio_endpoint,
+            access_key=self.minio_access_key,
+            secret_key=self.minio_secret_key,
+            secure=False)        
+    def exists (self, bucket):
+        return self.client.bucket_exists (bucket)
+    def make_bucket (self, bucket):
+        return self.client.make_bucket(bucket)
+    def list_buckets (self):
+        return client.list_buckets()
+    def fput_object (self, bucket, source, target):
+        return self.client.fput_object(bucket, source, target)
+    def list_objects (self, bucket, prefix=None, recursive=False):
+        return self.client.list_objects_v2(bucket, prefix, recursive)
+    def remove_object (self, bucket, object_name):
+        return self.client.remove_object (bucket, object_name)
+    
+bucket = 'covid-19'
+data = 'test.txt' #'noncomm_use_subset.tar.gz'
+store = Storage ()
+if not store.exists (bucket):
+    print (f"creating bucket {bucket}")
+    store.make_bucket (bucket)
+data_set = [ i.object_name for i in store.list_objects (bucket, recursive=True) ]
+if data in data_set:
+    print (f"object {data} is in bucket {bucket}")
+else:
+    print (f"creating data object {data}")
+    store.fput_object (bucket, data, data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import tarfile
+import json
+import minio
+
+objects = []
+with tarfile.open("noncomm_use_subset.tar.gz", "r:gz") as tar:
+    for index, member in enumerate(tar.getmembers()):
+        if index > 5:
+            break
+        stream = tar.extractfile(member)
+        objects.append (stream.read ()) #json.load(stream))
+#x = json.loads(objects[0])
+#print (json.dumps(x, indent=2))
+
+
+r = sc.parallelize ([0, 8, 4]).map(lambda v: v * 6).collect ()
+print (r)
+'''
+objs = [{ 
+    "id" : x['paper_id'],
+    "text" : [ obj['text'] for obj in x['body_text'] ]
+} for x in [ json.loads(o) for o in objects ] ]
+print ("sparking")
+r = sc.parallelize (objs)
+print ("framing")
+spark.read.json (r)
+'''
+
+
+
+
+
+# spark-s3
+# https://www.jitsejan.com/setting-up-spark-with-minio-as-object-storage.html
+sc = SparkContext (conf=SparkConf().setAll ([
+    ("spark.master",                   master),
+    ("spark.driver.host",              driver_host),
+    ("spark.app.name",                 "jib-s3"),
+    ("spark.jars.packages",            "org.apache.hadoop:hadoop-aws:2.7.3,com.amazonaws:aws-java-sdk:1.10.8"),
+    ("spark.hadoop.fs.s3a.endpoint",   f"http://{store.endpoint}"),
+    ("spark.hadoop.fs.s3a.access.key", store.access_key),
+    ("spark.hadoop.fs.s3a.secret.key", store.secret_key),
+    ("spark.hadoop.fs.s3a.path.style.access", "true"),
+    ("spark.hadoop.fs.s3a.impl",       "org.apache.hadoop.fs.s3a.S3AFileSystem"),
+    ("spark.submit.deployMode",        "client"),
+    ("spark.driver.memory",            "1g"),    
+    ("spark.executor.memory",          "512M")
+]))
+dataset = sc.textFile("s3a://covid-19/test.txt")
+dataset.map(lambda v: v * 6).collect ()
+
+print (r)

@@ -39,7 +39,7 @@ finalize () {
 
     yaml-set \
         --change=spec.template.spec.containers[0].resources.limits.cpu \
-        --value=1 \
+        --value=200m \
         gen/spark-worker-deployment.yaml
     yaml-set \
         --change=spec.template.spec.containers[0].resources.limits.memory \
@@ -47,7 +47,7 @@ finalize () {
         gen/spark-worker-deployment.yaml
     yaml-set \
         --change=spec.template.spec.containers[0].resources.requests.cpu \
-        --value=1 \
+        --value=200m \
         gen/spark-worker-deployment.yaml
     yaml-set \
         --change=spec.template.spec.containers[0].resources.requests.memory \
@@ -70,7 +70,7 @@ down () {
     if [ ! -d $SPUNK_HOME/gen ]; then
         gen
     fi
-    kubectl delete -n $NAMESPACE -f gen/
+    kubectl delete --ignore-not-found=true -n $NAMESPACE -f gen/
 }
 restart () {
     down
