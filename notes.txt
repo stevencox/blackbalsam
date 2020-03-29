@@ -1,3 +1,5 @@
+https://github.com/wangyuqing4/alluxio-k8s/tree/master/singleMaster-localJournal
+-------------------------------------------------------------
 import socket
 import os
 from pyspark import SparkConf
@@ -19,7 +21,7 @@ sc = SparkContext (conf=SparkConf().setAll ([
 r = sc.parallelize ([0, 8, 4]).map(lambda v: v * 6).collect ()
 spark = SparkSession (sc)
 print (r)
-
+-------------------------------------------------------------
 
 import requests
 
@@ -29,11 +31,7 @@ response = requests.get(url, stream=True)
 if response.status_code == 200:
     with open(covid_19__non_comm_use_tgz, 'wb') as f:
         f.write(response.raw.read())
-
-
-
-
-
+-------------------------------------------------------------
 
 import traceback
 from minio import Minio
@@ -70,7 +68,7 @@ class Storage:
         return self.client.list_objects_v2(bucket, prefix, recursive)
     def remove_object (self, bucket, object_name):
         return self.client.remove_object (bucket, object_name)
-    
+-------------------------------------------------------------    
 bucket = 'covid-19'
 data = 'test.txt' #'noncomm_use_subset.tar.gz'
 store = Storage ()
@@ -83,21 +81,7 @@ if data in data_set:
 else:
     print (f"creating data object {data}")
     store.fput_object (bucket, data, data)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+-------------------------------------------------------------
 import tarfile
 import json
 import minio
@@ -125,11 +109,7 @@ r = sc.parallelize (objs)
 print ("framing")
 spark.read.json (r)
 '''
-
-
-
-
-
+-------------------------------------------------------------
 # spark-s3
 # https://www.jitsejan.com/setting-up-spark-with-minio-as-object-storage.html
 sc = SparkContext (conf=SparkConf().setAll ([
@@ -147,6 +127,73 @@ sc = SparkContext (conf=SparkConf().setAll ([
     ("spark.executor.memory",          "512M")
 ]))
 dataset = sc.textFile("s3a://covid-19/test.txt")
+dataset.map(lambda v: v * 6).collect ()
+
+print (r)
+----------------------------------------------------------------
+# https://www.jitsejan.com/using-spark-to-read-from-s3.html
+import socket
+import os
+from pyspark import SparkConf
+from pyspark import SparkContext
+from pyspark.sql import SparkSession
+
+sc.stop ()
+driver_host = socket.gethostbyname(socket.gethostname())
+K8S_API_HOST="kubernetes.default.svc" #"scox.europa.renci.org"
+NAMESPACE = "jib" #open("/var/run/secrets/kubernetes.io/serviceaccount/namespace").read()
+sc = SparkContext (conf=SparkConf().setAll ([
+    ("spark.master",                   f"k8s://http://{K8S_API_HOST}:8080" ),
+    ("spark.driver.host",              driver_host),
+    ("spark.app.name",                 "jib-s3"),
+    ("spark.jars.packages",            "org.apache.hadoop:hadoop-aws:2.7.3,com.amazonaws:aws-java-sdk:1.7.4"),
+    ("spark.hadoop.fs.s3a.endpoint",   f"http://{store.endpoint}"),
+    ("spark.hadoop.fs.s3a.access.key", store.access_key),
+    ("spark.hadoop.fs.s3a.secret.key", store.secret_key),
+    ("spark.hadoop.fs.s3a.path.style.access", "true"),
+    ("spark.hadoop.fs.s3a.impl",       "org.apache.hadoop.fs.s3a.S3AFileSystem"),
+    ("spark.submit.deployMode",        "client"),
+    ("spark.executor.instances",       "2"),
+    ("spark.driver.memory",            "500M"),
+    ("spark.executor.memory",          "512M"),
+    ("spark.kubernetes.namespace",     NAMESPACE),
+    ("spark.kubernetes.authenticate.driver.serviceAccountName", "spark"),
+    ("spark.kubernetes.container.image",                        "spark-alluxio"),
+    #    ("spark.kubernetes.executor.volumes.hostPath.alluxio-domain.mount.path",     "/opt/domain"),
+    #    ("spark.kubernetes.executor.volumes.hostPath.alluxio-domain.mount.readOnly", "true"),
+    #    ("spark.kubernetes.executor.volumes.hostPath.alluxio-domain.options.path",   "/tmp/alluxio-domain"),
+    #    ("spark.kubernetes.executor.volumes.hostPath.alluxio-domain.options.type",   "Directory")
+]))
+dataset = sc.textFile("s3a://covid-19/test.txt")
+dataset.map(lambda v: v * 6).collect ()
+
+print (r)
+
+-----------------------------------------------------------------------
+import socket
+import os
+from pyspark import SparkConf
+from pyspark import SparkContext
+from pyspark.sql import SparkSession
+
+sc.stop ()
+driver_host = socket.gethostbyname(socket.gethostname())
+K8S_API_HOST="kubernetes.default.svc" #"scox.europa.renci.org"
+NAMESPACE = "jib" #open("/var/run/secrets/kubernetes.io/serviceaccount/namespace").read()
+sc = SparkContext (conf=SparkConf().setAll ([
+    ("spark.master",                   f"k8s://http://{K8S_API_HOST}:8080" ),
+    ("spark.driver.host",              driver_host),
+    ("spark.app.name",                 "Jib S3"),
+    ("spark.submit.deployMode",        "client"),
+    ("spark.executor.instances",       "2"),
+    ("spark.driver.memory",            "500M"),
+    ("spark.executor.memory",          "512M"),
+    ("spark.kubernetes.namespace",     NAMESPACE),
+    ("spark.kubernetes.authenticate.driver.serviceAccountName", "spark"),
+    ("spark.kubernetes.container.image",                        "spark-alluxio")
+]))
+print ("2. -----------------")
+dataset = sc.textFile("alluxio://alluxio-master-0:19998/LICENSE")
 dataset.map(lambda v: v * 6).collect ()
 
 print (r)

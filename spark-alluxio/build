@@ -1,0 +1,76 @@
+#!/bin/bash
+
+set -x
+set -e
+
+export NAMESPACE=jib
+
+export K8S_API_HOST=0.0.0.0
+export K8S_API_HOST=localhost
+export K8S_API_HOST=127.0.0.1
+export ALLUXIO_MASTER=alluxio-master-0
+
+export SPARK_VERSION_NUM=2.4.5
+export SPARK_VERSION=spark-$SPARK_VERSION_NUM
+export SPARK_DIST=$SPARK_VERSION-bin-hadoop2.7
+export SPARK_HOME=$PWD/$SPARK_DIST
+export ALLUXIO_VERSION_NUM=2.2.0
+export ALLUXIO_VERSION=alluxio-2.2.0
+
+init () {
+    if [ ! -d $SPARK_DIST ]; then
+        wget --timestamping --quiet http://apache.mirrors.pair.com/spark/$SPARK_VERSION/$SPARK_DIST.tgz
+        tar -xf $SPARK_DIST.tgz
+    fi
+    cd $SPARK_DIST
+}
+
+get_alluxio () {
+    if [ ! -f jars/$ALLUXIO_VERSION-client.jar ]; then
+        id=$(docker create alluxio/alluxio:$ALLUXIO_VERSION_NUM)
+        docker cp $id:/opt/alluxio/client/$ALLUXIO_VERSION-client.jar jars/$ALLUXIO_VERSION-client.jar
+        docker rm -v $id 1>/dev/null
+    fi
+}
+
+build_spark () {
+    init
+    cp ../core-site.xml $SPARK_HOME/conf
+    wget --timestamping https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/2.7.3/hadoop-aws-2.7.3.jar -P $SPARK_HOME/jars/
+    wget --timestamping https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk/1.7.4/aws-java-sdk-1.7.4.jar -P $SPARK_HOME/jars/
+    docker build -t spark-alluxio -f kubernetes/dockerfiles/spark/Dockerfile .
+}
+make_account () {
+    kubectl delete --ignore-not-found=true --namespace=$NAMESPACE serviceaccount spark
+    kubectl delete --ignore-not-found=true --namespace=$NAMESPACE clusterrolebinding spark-role
+    kubectl create --namespace=$NAMESPACE serviceaccount spark
+    kubectl create --namespace=$NAMESPACE \
+            clusterrolebinding spark-role --clusterrole=edit \
+            --serviceaccount=$NAMESPACE:spark
+}
+test () {
+    init
+    ./bin/spark-submit \
+        --master k8s://http://$K8S_API_HOST:8080 \
+        --deploy-mode cluster --name spark-alluxio --conf spark.executor.instances=1 \
+        --class org.apache.spark.examples.JavaWordCount \
+        --driver-memory 500m --executor-memory 1g \
+        --conf spark.kubernetes.namespace=$NAMESPACE \
+        --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+        --conf spark.kubernetes.container.image=spark-alluxio \
+        --conf spark.kubernetes.executor.volumes.hostPath.alluxio-domain.mount.path=/opt/domain \
+        --conf spark.kubernetes.executor.volumes.hostPath.alluxio-domain.mount.readOnly=true \
+        --conf spark.kubernetes.executor.volumes.hostPath.alluxio-domain.options.path=/tmp/alluxio-domain \
+        --conf spark.kubernetes.executor.volumes.hostPath.alluxio-domain.options.type=Directory \
+        local:///opt/spark/examples/jars/spark-examples_2.11-$SPARK_VERSION_NUM.jar \
+        alluxio://$ALLUXIO_MASTER:19998/LICENSE
+}
+
+build () {
+    init
+    get_alluxio
+    build_spark
+    make_account
+}
+
+$*
