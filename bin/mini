@@ -1,0 +1,49 @@
+#!/bin/bash
+
+kube_version=v1.18.0
+#kube_version=v1.14.10
+#driver=hyperkit
+driver=virtualbox
+cpus=8
+memory=32768
+
+if [ ! -z "$MINI_PROFILE" ]; then
+    profile_arg="-p $MINI_PROFILE"
+fi
+
+set -x
+
+create () {
+#    minikube stop $profile_arg
+#    minikube delete $profile_arg
+    minikube config set memory $memory
+    minikube config set cpus $cpus
+    minikube config set kubernetes-version $kube_version
+    minikube config set vm-driver $driver
+    minikube start $profile_arg
+}
+start () {
+    minikube start \
+             --nfs-share=/Users/scox/nfs \
+             --nfs-shares-root=/nfs \
+             $profile_arg
+}
+stop () {
+    minikube stop
+}
+delete () {
+    minikube delete $profile_arg
+}        
+status () {
+    minikube status
+    minikube ssh "df -h"
+}
+nodes () {
+    kubectl describe nodes
+}
+clean () {
+    minikube ssh "docker system prune -a --force"
+}
+$*
+
+
