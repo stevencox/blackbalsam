@@ -28,15 +28,15 @@ singleuser:
   ##############################################################################
   storage:
     extraVolumes:
-      - name: "jupyterhub-shared"
-        persistentVolumeClaim:
-        claimName: # A RWM persistent volume claim. Configure.
+#      - name: "jupyterhub-shared"
+#        persistentVolumeClaim:
+#        claimName: # A RWM persistent volume claim. Configure.
       - name: "shared-memory-volume"
         emptyDir:
           medium: "Memory"
     extraVolumeMounts:
-      - name: "jupyterhub-shared"
-        mountPath: "/home/shared"
+#      - name: "jupyterhub-shared"
+#        mountPath: "/home/shared"
       - name: "shared-memory-volume"
         mountPath: "/dev/shm"
   ##############################################################################

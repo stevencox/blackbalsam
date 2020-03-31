@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#set -x
+set -x
 set -e
 
 export RELEASE=jib
@@ -42,28 +42,23 @@ spark () {
 jupyterhub () {
     conf () {
         mkdir -p $DIST
-        wget --timestamping \
-             --directory-prefix=$DIST \
-             $helm_url
-        
+        wget --timestamping --directory-prefix=$DIST $helm_url
         if [ ! -d $PWD/darwin-amd64 ]; then
             pushd $DIST
             tar xvzf $helm_dist
             popd
-        fi    
+        fi
         if [ "$(kubectl get serviceaccount -n kube-system tiller -o yaml | grep -c tiller)" == 0 ]; then
             kubectl --namespace kube-system create serviceaccount tiller
-#        fi
-#        if [ "$(kubectl get clusterrolebinding -n kube-system tiller -o yaml | grep -c tiller)" == 0 ]; then
             kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
             helm init --service-account tiller --history-max 100 --wait
-        kubectl patch deployment tiller-deploy \
-                --namespace=kube-system --type=json \
-                --patch='[{"op": "add", "path": "/spec/template/spec/containers/0/command", "value": ["/tiller", "--listen=localhost:44134"]}]'
-        helm version
+            kubectl patch deployment tiller-deploy \
+                    --namespace=kube-system --type=json \
+                    --patch='[{"op": "add", "path": "/spec/template/spec/containers/0/command", "value": ["/tiller", "--listen=localhost:44134"]}]'
+            helm version
+        fi
         helm repo add jupyterhub https://jupyterhub.github.io/helm-chart/
         helm repo update
-        fi
     }
     jupyterhub_ready () {
         kubectl get deployments \
@@ -101,7 +96,7 @@ jupyterhub () {
         up
     }
     forward () {
-        kubectl port-forward -n $NAMESPACE service/proxy-public 8888:80 --address 0.0.0.0
+        kubectl port-forward -n $NAMESPACE service/proxy-public 8888:80 #--address 0.0.0.0
     }
     
     $*
@@ -142,37 +137,6 @@ alluxio () {
         if [[ "$(helm ls | grep -v NAME | awk '{ print $1 }' | grep -c alluxio)" == 1 ]]; then
             helm delete --purge alluxio
         fi
-    }
-    x () {
-#                     --pathsep='/' \
-        helm inspect values alluxio-charts/alluxio > $alluxio_conf
-        setval () {
-            set -x
-            yaml-set --change="$1" \
-                     --value="$2" \
-                     -F dquote \
-                     -t / \
-                     $alluxio_conf
-            set +x
-        }
-        setval "properties.{alluxio.master.hostname}" "$ALLUXIO_MASTER_HOST"
-        setval "properties/alluxio.underfs.address" "$ALLUXIO_MASTER_HOST"
-        setval "properties.alluxio.master.hostname" "$ALLUXIO_MASTER_HOST"
-        setval "properties.alluxio.master.hostname" "$ALLUXIO_MASTER_HOST"
-        setval "properties.alluxio.master.hostname" "$ALLUXIO_MASTER_HOST"
-        setval "properties.alluxio.master.hostname" "$ALLUXIO_MASTER_HOST"
-        setval "properties.alluxio.master.hostname" "$ALLUXIO_MASTER_HOST"
-        
-        cat <<EOF  > alluxio.properties
-alluxio.master.hostname=localhost
-alluxio.underfs.address=s3a://$MINIO_BUCKET/
-alluxio.underfs.s3.endpoint=http://$MINIO_HOST:$MINIO_PORT/
-alluxio.underfs.s3.disable.dns.buckets=true
-alluxio.underfs.s3a.inherit_acl=false
-aws.accessKeyId=$ACCESS_KEY
-aws.secretKey=$SECRET_KEY
-EOF
-        #helm install --namespace $NAMESPACE --name "alluxio" alluxio
     }
     $*
 }
@@ -229,12 +193,18 @@ nodes () {
     kubectl describe nodes
 }
 init () {
-    kubectl --namespace kube-system create serviceaccount tiller
-    kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+    set -x
+    if [ "$(kubectl get serviceaccounts -n kube-system | grep -c tiller)" == 0 ]; then
+        kubectl --namespace kube-system create serviceaccount tiller
+    fi
+    if [ "$(kubectl get clusterrolebinding | grep -c tiller)" == 0 ]; then
+        kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+    fi
     helm init --service-account tiller --history-max 100 --wait
+    set +x
 }
 
-
+init
 
 $*
 
