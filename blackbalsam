@@ -89,9 +89,15 @@ hub () {
              --namespace $NAMESPACE  \
              --version=$VERSION \
              --values config.yaml
-        patch_hub
+        proxy
+        patch
     }
-    patch_hub () {
+    proxy () {
+        kubectl apply \
+                -f etc/ambassador/jupyterhub-ambassador-mapping.yaml \
+                --namespace=$NAMESPACE
+    }
+    patch () {
         # https://github.com/jupyterhub/kubespawner/issues/354
         kubectl patch deploy \
                 --namespace $NAMESPACE hub \
@@ -100,7 +106,8 @@ hub () {
     }
     down () {
         helm version
-        if [[ "$(helm ls | grep -v NAME | grep -c jupyterhub)" == 1 ]]; then
+        if [[ "$(helm ls | grep -v NAME | grep -c jupyterhub)" -gt 0 ]]; then
+            echo deleting helm release $RELEASE
             helm delete $RELEASE --purge
         fi
     }
@@ -119,9 +126,6 @@ proxy () {
     up () {
         helm repo add datawire https://www.getambassador.io
         helm install --name ambassador --namespace $NAMESPACE datawire/ambassador
-        kubectl apply \
-            -f etc/ambassador/jupyterhub-ambassador-mapping.yaml \
-            --namespace=$NAMESPACE
     }
     down () {
         if [[ "$(helm ls | grep -v NAME | grep -c ambassador)" == 1 ]]; then
