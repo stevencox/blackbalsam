@@ -89,6 +89,14 @@ hub () {
              --namespace $NAMESPACE  \
              --version=$VERSION \
              --values config.yaml
+        patch_hub
+    }
+    patch_hub () {
+        # https://github.com/jupyterhub/kubespawner/issues/354
+        kubectl patch deploy \
+                --namespace $NAMESPACE hub \
+                --type json \
+                --patch '[{"op": "replace", "path": "/spec/template/spec/containers/0/command", "value": ["bash", "-c", "\nmkdir -p ~/hotfix\ncp -r /usr/local/lib/python3.6/dist-packages/kubespawner ~/hotfix\nls -R ~/hotfix\npatch ~/hotfix/kubespawner/spawner.py << EOT\n72c72\n<             key=lambda x: x.last_timestamp,\n---\n>             key=lambda x: x.last_timestamp and x.last_timestamp.timestamp() or 0.,\nEOT\n\nPYTHONPATH=$HOME/hotfix jupyterhub --config /srv/jupyterhub_config.py --upgrade-db\n"]}]'
     }
     down () {
         helm version
@@ -107,25 +115,43 @@ hub () {
     $*
 }
 
-ambassador () {
+proxy () {
     up () {
         helm repo add datawire https://www.getambassador.io
         helm install --name ambassador --namespace $NAMESPACE datawire/ambassador
+        kubectl apply \
+            -f etc/ambassador/jupyterhub-ambassador-mapping.yaml \
+            --namespace=$NAMESPACE
     }
     down () {
-        echo
+        if [[ "$(helm ls | grep -v NAME | grep -c ambassador)" == 1 ]]; then
+            helm delete ambassador --purge
+        fi
+        for crd in $(kubectl get customresourcedefinitions | grep ambassador | awk '{ print $1  }'); do
+            kubectl delete customresourcedefinition $crd
+        done
+    }
+    dashboard () {
+        endpoint_ip=$(kubectl \
+                          get svc -n $NAMESPACE \
+                          -o=jsonpath="{.items[?(@.metadata.name=='ambassador')].status.loadBalancer.ingress[0].ip}")
+        edgectl login --namespace=$NAMESPACE $endpoint_ip
     }
     $*
 }
 
 minio () {
     up () {
-        helm install \
-             --set accessKey=minio \
-             --set secretKey=minio123 \
-             --name minio \
-             --namespace $NAMESPACE \
-             stable/minio
+        if [ "$(helm list | grep -c minio)" == 1 ]; then
+            echo == WARNING ==: A minio release is already installed.
+        else
+            helm install \
+                 --set accessKey=minio \
+                 --set secretKey=minio123 \
+                 --name minio \
+                 --namespace $NAMESPACE \
+                 stable/minio
+        fi
     }
     down () {
         if [[ "$(helm ls | grep -v NAME | awk '{ print $1 }' | grep -c minio)" == 1 ]]; then
