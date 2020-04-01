@@ -39,11 +39,11 @@ spark () {
     }
     $*
 }
-jupyterhub () {
+hub () {
     conf () {
         mkdir -p $DIST
         wget --timestamping --directory-prefix=$DIST $helm_url
-        if [ ! -d $PWD/darwin-amd64 ]; then
+        if [ ! -d $DIST/darwin-amd64 ]; then
             pushd $DIST
             tar xvzf $helm_dist
             popd
@@ -78,6 +78,11 @@ jupyterhub () {
         yaml-set \
             --change="proxy.secretToken" \
             --value=$jupyterhub_secret_token \
+            -F dquote \
+            config.yaml
+        yaml-set \
+            --change="hub.baseUrl" \
+            --value=$jupyterhub_baseUrl \
             -F dquote \
             config.yaml
         helm upgrade --install $RELEASE jupyterhub/jupyterhub \
