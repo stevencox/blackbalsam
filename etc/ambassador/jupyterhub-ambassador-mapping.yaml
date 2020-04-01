@@ -1,0 +1,8 @@
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: jupyterhub
+spec:
+  prefix: /blackbalsam/
+  rewrite: /blackbalsam/
+  service: proxy-public:80

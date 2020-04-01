@@ -87,7 +87,7 @@ jupyterhub () {
     }
     down () {
         helm version
-        if [[ "$(helm ls | grep -v NAME | awk '{ print $1 }' | grep -c jupyterhub)" == 1 ]]; then
+        if [[ "$(helm ls | grep -v NAME | grep -c jupyterhub)" == 1 ]]; then
             helm delete $RELEASE --purge
         fi
     }
@@ -99,6 +99,17 @@ jupyterhub () {
         kubectl port-forward -n $NAMESPACE service/proxy-public 8888:80 #--address 0.0.0.0
     }
     
+    $*
+}
+
+ambassador () {
+    up () {
+        helm repo add datawire https://www.getambassador.io
+        helm install --name ambassador --namespace $NAMESPACE datawire/ambassador
+    }
+    down () {
+        echo
+    }
     $*
 }
 
@@ -119,27 +130,27 @@ minio () {
     $*
 }
 
-alluxio () {
-    up () {
-        helm repo add alluxio-charts https://alluxio-charts.storage.googleapis.com/openSource/2.2.0
-        helm repo update
-        export ALLUXIO_MASTER_HOST=alluxio-master-0
-        export MINIO_BUCKET=covid-19
-        export MINIO_HOST=minio-service
-        export MINIO_PORT=9000
-        export ACCESS_KEY=minio
-        export SECRET_KEY=minio123
-        export alluxio_conf="alluxio.yaml"
-        envsubst < ${alluxio_conf}.template > $alluxio_conf
-        helm install --namespace $NAMESPACE --name "alluxio" alluxio-charts/alluxio
-    }
-    down () {
-        if [[ "$(helm ls | grep -v NAME | awk '{ print $1 }' | grep -c alluxio)" == 1 ]]; then
-            helm delete --purge alluxio
-        fi
-    }
-    $*
-}
+#alluxio () {
+#    up () {
+#        helm repo add alluxio-charts https://alluxio-charts.storage.googleapis.com/openSource/2.2.0
+#        helm repo update
+#        export ALLUXIO_MASTER_HOST=alluxio-master-0
+#        export MINIO_BUCKET=covid-19
+#        export MINIO_HOST=minio-service
+#        export MINIO_PORT=9000
+#        export ACCESS_KEY=minio
+#        export SECRET_KEY=minio123
+#        export alluxio_conf="alluxio.yaml"
+#        envsubst < ${alluxio_conf}.template > $alluxio_conf
+#        helm install --namespace $NAMESPACE --name "alluxio" alluxio-charts/alluxio
+#    }
+#    down () {
+#        if [[ "$(helm ls | grep -v NAME | awk '{ print $1 }' | grep -c alluxio)" == 1 ]]; then
+#            helm delete --purge alluxio
+#        fi
+#    }
+#    $*
+#}
 #-------------------------------------------------
 alluxio () {
     up () {

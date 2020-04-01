@@ -12,13 +12,15 @@ export ALLUXIO_MASTER=alluxio-master-0
 
 export SPARK_VERSION_NUM=2.4.5
 export SPARK_VERSION=spark-$SPARK_VERSION_NUM
+export APP_HOME=$PWD
 export SPARK_DIST=$SPARK_VERSION-bin-hadoop2.7
 export SPARK_HOME=$PWD/$SPARK_DIST
 export ALLUXIO_VERSION_NUM=2.2.0
 export ALLUXIO_VERSION=alluxio-2.2.0
 
 init () {
-    if [ ! -d $SPARK_DIST ]; then
+    if [ ! -d $SPARK_HOME ]; then
+	cd $APP_HOME
         wget --timestamping --quiet http://apache.mirrors.pair.com/spark/$SPARK_VERSION/$SPARK_DIST.tgz
         tar -xf $SPARK_DIST.tgz
     fi
@@ -35,6 +37,7 @@ get_alluxio () {
 
 build_spark () {
     init
+    pwd
     cp ../core-site.xml $SPARK_HOME/conf
     wget --timestamping https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/2.7.3/hadoop-aws-2.7.3.jar -P $SPARK_HOME/jars/
     wget --timestamping https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk/1.7.4/aws-java-sdk-1.7.4.jar -P $SPARK_HOME/jars/
