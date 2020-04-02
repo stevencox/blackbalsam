@@ -76,3 +76,6 @@ build () {
 init
 
 $*
+
+
+#  docker build --no-cache -f kubernetes/dockerfiles/spark/Dockerfile . -t renciorg/spark-alluxio:latest -t renciorg/spark-alluxio:v0.1 
