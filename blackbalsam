@@ -42,7 +42,7 @@ spark () {
 hub () {
     conf () {
         mkdir -p $DIST
-        wget --timestamping --directory-prefix=$DIST $helm_url
+        wget --timestamping --quiet --directory-prefix=$DIST $helm_url
         if [ ! -d $DIST/darwin-amd64 ]; then
             pushd $DIST
             tar xvzf $helm_dist
@@ -99,10 +99,20 @@ hub () {
     }
     patch () {
         # https://github.com/jupyterhub/kubespawner/issues/354
+        
         kubectl patch deploy \
                 --namespace $NAMESPACE hub \
                 --type json \
                 --patch '[{"op": "replace", "path": "/spec/template/spec/containers/0/command", "value": ["bash", "-c", "\nmkdir -p ~/hotfix\ncp -r /usr/local/lib/python3.6/dist-packages/kubespawner ~/hotfix\nls -R ~/hotfix\npatch ~/hotfix/kubespawner/spawner.py << EOT\n72c72\n<             key=lambda x: x.last_timestamp,\n---\n>             key=lambda x: x.last_timestamp and x.last_timestamp.timestamp() or 0.,\nEOT\n\nPYTHONPATH=$HOME/hotfix jupyterhub --config /srv/jupyterhub_config.py --upgrade-db\n"]}]'
+        x ()  {
+         for x in {0..4}; do
+             echo kubectl patch deploy \
+                --namespace $NAMESPACE hub \
+                --type json \
+                --patch '[{"op": "replace", "path": "/spec/template/spec/containers/'$x'/command", "value": ["bash", "-c", "\nmkdir -p ~/hotfix\ncp -r /usr/local/lib/python3.6/dist-packages/kubespawner ~/hotfix\nls -R ~/hotfix\npatch ~/hotfix/kubespawner/spawner.py << EOT\n72c72\n<             key=lambda x: x.last_timestamp,\n---\n>             key=lambda x: x.last_timestamp and x.last_timestamp.timestamp() or 0.,\nEOT\n\nPYTHONPATH=$HOME/hotfix jupyterhub --config /srv/jupyterhub_config.py --upgrade-db\n"]}]'
+         done
+        }
+        echo done patch
     }
     down () {
         helm version
@@ -239,7 +249,6 @@ nodes () {
     kubectl describe nodes
 }
 init () {
-    set -x
     if [ "$(kubectl get serviceaccounts -n kube-system | grep -c tiller)" == 0 ]; then
         kubectl --namespace kube-system create serviceaccount tiller
     fi
@@ -247,7 +256,6 @@ init () {
         kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
     fi
     helm init --service-account tiller --history-max 100 --wait
-    set +x
 }
 
 init

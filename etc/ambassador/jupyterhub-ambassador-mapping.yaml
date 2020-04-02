@@ -6,3 +6,4 @@ spec:
   prefix: /blackbalsam/
   rewrite: /blackbalsam/
   service: proxy-public:80
+  use_websocket: true

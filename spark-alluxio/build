@@ -3,7 +3,7 @@
 set -x
 set -e
 
-export NAMESPACE=jib
+export NAMESPACE=blackbalsam
 
 export K8S_API_HOST=0.0.0.0
 export K8S_API_HOST=localhost
@@ -36,7 +36,6 @@ get_alluxio () {
 }
 
 build_spark () {
-    init
     pwd
     cp ../core-site.xml $SPARK_HOME/conf
     wget --timestamping https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/2.7.3/hadoop-aws-2.7.3.jar -P $SPARK_HOME/jars/
@@ -52,7 +51,6 @@ make_account () {
             --serviceaccount=$NAMESPACE:spark
 }
 test () {
-    init
     ./bin/spark-submit \
         --master k8s://http://$K8S_API_HOST:8080 \
         --deploy-mode cluster --name spark-alluxio --conf spark.executor.instances=1 \
@@ -70,10 +68,11 @@ test () {
 }
 
 build () {
-    init
     get_alluxio
     build_spark
     make_account
 }
+
+init
 
 $*

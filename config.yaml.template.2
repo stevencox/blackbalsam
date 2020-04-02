@@ -19,6 +19,9 @@
 #
 ##############################################################################
 singleuser:
+  # Mandatory for Bare Metal installation https://github.com/jupyterhub/kubespawner/issues/354
+  cloudMetadata:
+    enabled: true
   ##############################################################################
   #
   #  S T O R A G E
@@ -71,15 +74,25 @@ singleuser:
   #
   ##############################################################################
   profileList:
-    - display_name: "Python / R / Scala Spark Notebook"
-      description: "Python / R / Scala Spark Notebook"
-      default: true
-      kubespawner_override:
-        service_account: spark
     - display_name: "Python / R / Scala Spark Notebook with a Single GPU"
       description: "Python / R / Scala Spark Notebook with a Single GPU"
       kubespawner_override:
         service_account: spark
+        command:
+          - bash
+          - -c
+          - |
+            mkdir -p ~/hotfix
+            cp -r /usr/local/lib/python3.6/dist-packages/kubespawner ~/hotfix
+            ls -R ~/hotfix
+            patch ~/hotfix/kubespawner/spawner.py << EOT
+            72c72
+            <             key=lambda x: x.last_timestamp,
+            ---
+            >             key=lambda x: x.last_timestamp and x.last_timestamp.timestamp() or 0.,
+            EOT
+            
+            PYTHONPATH=$HOME/hotfix jupyterhub --config /srv/jupyterhub_config.py --upgrade-db
         extra_resource_limits:
           nvidia.com/gpu: "1"
     - display_name: "Data science kernels and tools: Python, R, and Julia."
@@ -102,7 +115,28 @@ singleuser:
         image: jupyter/datascience-notebook:dc9744740e12
         extra_resource_limits:
           nvidia.com/gpu: "1"
-
+    - display_name: "Python / R / Scala Spark Notebook"
+      description: "Python / R / Scala Spark Notebook"
+      default: true
+      kubespawner_override:
+        image: "heliumdatastage/all-spark-notebook:v0.1"
+        service_account: spark
+        command:
+          - bash
+          - -c
+          - |
+            mkdir -p ~/hotfix
+            cp -r /usr/local/lib/python3.6/dist-packages/kubespawner ~/hotfix
+            ls -R ~/hotfix
+            patch ~/hotfix/kubespawner/spawner.py << EOT
+            72c72
+            <             key=lambda x: x.last_timestamp,
+            ---
+            >             key=lambda x: x.last_timestamp and x.last_timestamp.timestamp() or 0.,
+            EOT
+            
+            PYTHONPATH=$HOME/hotfix jupyterhub --config /srv/jupyterhub_config.py --upgrade-db
+            
 ##############################################################################
 #
 #  B A S E   U R L
@@ -127,3 +161,5 @@ hub:
 ##############################################################################
 proxy:
   secretToken: ""
+
+
