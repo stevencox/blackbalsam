@@ -4,6 +4,12 @@ singleuser:
     name: "heliumdatastage/all-spark-notebook"
     tag: "v0.1"
 
+  profileList:
+    - display_name: "Python / R / Scala Spark Notebook"
+      description: "Python / R / Scala Spark Notebook"
+      default: true
+      kubespawner_override:
+        service_account: spark
 hub:
   baseUrl: /blackbalsam/
 
