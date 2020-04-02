@@ -1,0 +1,290 @@
+#!/bin/bash
+
+#############################################################
+##
+##  B L A C K B A L S A M
+## 
+##    A multi modal data science environment featuring
+##       User Experience: Jupyter Notebooks...
+##       Compute: CPU / GPU / Apache Spark
+##       Storage: NFS / S3 / Alluxio
+## 
+##
+#############################################################
+set -x
+set -e
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+BLACKBALSAM_HOME=$( dirname $DIR )
+
+export RELEASE=blackbalsam
+export NAMESPACE=blackbalsam
+export VERSION=0.8.2
+export DIST=$BLACKBALSAM_HOME/bin
+export ETC=$BLACKBALSAM_HOME/etc
+export PATH=$DIST/darwin-amd64:$PATH
+export helm_dist=helm-v2.16.3-darwin-amd64.tar.gz
+export helm_url=https://get.helm.sh/$helm_dist
+
+#############################################################
+##
+##  Make namespace: Initialize the namespace.
+##
+#############################################################
+make_namespace () {
+    if [ "$(kubectl get namespaces | grep -c $NAMESPACE)" == 0 ]; then
+        kubectl create namespace $NAMESPACE
+    fi
+}
+spark () {
+    conf () {
+        spark/spunk gen
+    }
+    up () {
+        if [ "$(kubectl get -n $NAMESPACE list deployment 2>&1 | grep -c 1/1 | grep -v 'No resources')" != 0 ]; then
+            echo spark is already running. use down first.
+        else
+            make_namespace
+            spark/spunk up
+        fi
+    }
+    down () {
+        spark/spunk down
+    }
+    $*
+}
+#############################################################
+##
+##  Manage JupyterHub.
+##
+#############################################################
+hub () {
+    conf () {
+        mkdir -p $DIST
+        wget --timestamping --quiet --directory-prefix=$DIST $helm_url
+        if [ ! -d $DIST/darwin-amd64 ]; then
+            pushd $DIST
+            tar xvzf $helm_dist
+            popd
+        fi
+        if [ "$(kubectl get serviceaccount -n kube-system tiller -o yaml | grep -c tiller)" == 0 ]; then
+            kubectl --namespace kube-system create serviceaccount tiller
+            kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+            helm init --service-account tiller --history-max 100 --wait
+            kubectl patch deployment tiller-deploy \
+                    --namespace=kube-system --type=json \
+                    --patch='[{"op": "add", "path": "/spec/template/spec/containers/0/command", "value": ["/tiller", "--listen=localhost:44134"]}]'
+            helm version
+            helm repo add jupyterhub https://jupyterhub.github.io/helm-chart/
+            helm repo update
+        fi
+    }
+    jupyterhub_ready () {
+        kubectl get deployments \
+                --namespace=$NAMESPACE \
+                --selector app=jupyterhub,component=hub \
+                -o=jsonpath="{.items[?(@.metadata.labels.component=='hub')].status.readyReplicas}"
+    }
+    wait () {
+        while [[ ! "$(jupyterhub_ready)" == 1 ]]; do
+            echo waiting
+        done
+    }
+    up () {
+        conf
+        helm version
+        cp $ETC/hub/config.yaml.template config.yaml
+        yaml-set \
+            --change="proxy.secretToken" \
+            --value=$jupyterhub_secret_token \
+            -F dquote \
+            config.yaml
+        yaml-set \
+            --change="hub.baseUrl" \
+            --value=$jupyterhub_baseUrl \
+            -F dquote \
+            config.yaml
+        helm upgrade --install $RELEASE jupyterhub/jupyterhub \
+             --namespace $NAMESPACE  \
+             --version=$VERSION \
+             --values config.yaml
+        proxy
+        patch
+    }
+    proxy () {
+        kubectl apply \
+                -f $ETC/ambassador/jupyterhub-ambassador-mapping.yaml \
+                --namespace=$NAMESPACE
+    }
+    patch () {
+        # https://github.com/jupyterhub/kubespawner/issues/354        
+        kubectl patch deploy \
+                --namespace $NAMESPACE hub \
+                --type json \
+                --patch '[{"op": "replace", "path": "/spec/template/spec/containers/0/command", "value": ["bash", "-c", "\nmkdir -p ~/hotfix\ncp -r /usr/local/lib/python3.6/dist-packages/kubespawner ~/hotfix\nls -R ~/hotfix\npatch ~/hotfix/kubespawner/spawner.py << EOT\n72c72\n<             key=lambda x: x.last_timestamp,\n---\n>             key=lambda x: x.last_timestamp and x.last_timestamp.timestamp() or 0.,\nEOT\n\nPYTHONPATH=$HOME/hotfix jupyterhub --config /srv/jupyterhub_config.py --upgrade-db\n"]}]'
+        x ()  {
+         for x in {0..4}; do
+             echo kubectl patch deploy \
+                --namespace $NAMESPACE hub \
+                --type json \
+                --patch '[{"op": "replace", "path": "/spec/template/spec/containers/'$x'/command", "value": ["bash", "-c", "\nmkdir -p ~/hotfix\ncp -r /usr/local/lib/python3.6/dist-packages/kubespawner ~/hotfix\nls -R ~/hotfix\npatch ~/hotfix/kubespawner/spawner.py << EOT\n72c72\n<             key=lambda x: x.last_timestamp,\n---\n>             key=lambda x: x.last_timestamp and x.last_timestamp.timestamp() or 0.,\nEOT\n\nPYTHONPATH=$HOME/hotfix jupyterhub --config /srv/jupyterhub_config.py --upgrade-db\n"]}]'
+         done
+        }
+        echo done patch
+    }
+    down () {
+        helm version
+        if [[ "$(helm ls | grep -v NAME | grep -c jupyterhub)" -gt 0 ]]; then
+            echo deleting helm release $RELEASE
+            helm delete $RELEASE --purge
+        fi
+    }
+    restart () {
+        down
+        up
+    }
+    forward () {
+        kubectl port-forward -n $NAMESPACE service/proxy-public 8888:80 #--address 0.0.0.0
+    }
+    
+    $*
+}
+#############################################################
+##
+##  Manage the software defined reverse proxy.
+##
+#############################################################
+proxy () {
+    up () {
+        helm repo add datawire https://www.getambassador.io
+        helm install --name ambassador --namespace $NAMESPACE datawire/ambassador
+    }
+    down () {
+        if [[ "$(helm ls | grep -v NAME | grep -c ambassador)" == 1 ]]; then
+            helm delete ambassador --purge
+        fi
+        for crd in $(kubectl get customresourcedefinitions | grep ambassador | awk '{ print $1  }'); do
+            kubectl delete customresourcedefinition $crd
+        done
+    }
+    dashboard () {
+        endpoint_ip=$(kubectl \
+                          get svc -n $NAMESPACE \
+                          -o=jsonpath="{.items[?(@.metadata.name=='ambassador')].status.loadBalancer.ingress[0].ip}")
+        edgectl login --namespace=$NAMESPACE $endpoint_ip
+    }
+    $*
+}
+#############################################################
+##
+##  Manage the S3 object store.
+##
+#############################################################
+minio () {
+    up () {
+        if [ "$(helm list | grep -c minio)" == 1 ]; then
+            echo == WARNING ==: A minio release is already installed.
+        else
+            helm install \
+                 --set accessKey=minio \
+                 --set secretKey=minio123 \
+                 --name minio \
+                 --namespace $NAMESPACE \
+                 stable/minio
+        fi
+    }
+    down () {
+        if [[ "$(helm ls | grep -v NAME | awk '{ print $1 }' | grep -c minio)" == 1 ]]; then
+            helm delete --purge minio
+        fi
+    }
+    $*
+}
+#############################################################
+##
+##  Manage the memory cache data fabric.
+##
+#############################################################
+alluxio () {
+    up () {
+        echo "configuring and starting alluxio..."
+        export ALLUXIO_MASTER_HOST=alluxio-master-0
+        export MINIO_BUCKET=covid-19
+        export MINIO_HOST=minio
+        export MINIO_PORT=9000
+        export MINIO_ACCESS_KEY=minio
+        export MINIO_SECRET_KEY=minio123
+        export alluxio_conf="alluxio-k8s/singleMaster-localJournal/alluxio-configmap.yaml"
+        envsubst < ${alluxio_conf}.template > $alluxio_conf
+        echo "  configured. creating kubernetes artifacts."
+        kubectl create --namespace $NAMESPACE --recursive=true -f alluxio-k8s #/singleMaster-localJournal/
+    }
+    down () {
+        echo "stopping alluxio..."
+        kubectl delete --ignore-not-found=true --namespace $NAMESPACE --recursive=true -f alluxio-k8s
+    }
+    $*
+}
+#############################################################
+##
+##  Manage the system as a whole.
+##
+#############################################################
+SYSTEMS="minio alluxio spark jupyterhub"
+up () {
+    for system in $SYSTEMS; do
+        $system up
+    done
+}
+down () {
+    reversed="$(echo $SYSTEMS | awk '{ for (i=NF; i>1; i--) printf("%s ",$i); print $1; }')"
+    for system in $reversed; do
+        $system down
+    done
+    kubectl delete --ignore-not-found=true namespace $NAMESPACE
+}
+restart () {
+    echo "restarting."
+    echo "   bringing the system down."
+    down
+    echo "   bringing the system up."
+    up
+}
+status () {
+    for kind in deployment pod service pvc pv; do
+        message=$( echo $kind | awk '{ print toupper($0) }' )
+        echo $message
+        kubectl get -n $NAMESPACE $kind 2>&1 | sed "s,^,   ,g"
+    done
+}
+nodes () {
+    kubectl describe nodes
+}
+#############################################################
+##
+##  Initialize.
+##
+#############################################################
+init () {
+    # Require an init file.
+    if [ ! -f $HOME/.blackbalsam ]; then
+        echo $HOME/.blackbalsam must exist and contain a variable called jupyterhub_secret_token
+        exit 1
+    fi
+    source $HOME/.blackbalsam
+    f  () {
+    if [ "$(kubectl get serviceaccounts -n kube-system | grep -c tiller)" == 0 ]; then
+        kubectl --namespace kube-system create serviceaccount tiller
+    fi
+    if [ "$(kubectl get clusterrolebinding | grep -c tiller)" == 0 ]; then
+        kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+    fi
+    helm init --service-account tiller --history-max 100 --wait
+    }
+}
+
+init
+
+$*
+
+exit 0
