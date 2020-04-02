@@ -34,13 +34,35 @@ get_alluxio () {
         docker rm -v $id 1>/dev/null
     fi
 }
-
+######################################################################
+##
+##  Build a Spark-Alluxio docker image.
+##    * Add configuration to incorporate Hadoop libraries.
+##    * Get the appropriate AWS libraries for S3 integration.
+##    * Add all of this to our Spark distribution. 
+##    * Build a docker image packaging it all.
+##    * Login to docker and push the image.
+##
+######################################################################
 build_spark () {
-    pwd
     cp ../core-site.xml $SPARK_HOME/conf
-    wget --timestamping https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/2.7.3/hadoop-aws-2.7.3.jar -P $SPARK_HOME/jars/
-    wget --timestamping https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk/1.7.4/aws-java-sdk-1.7.4.jar -P $SPARK_HOME/jars/
-    docker build -t spark-alluxio -f kubernetes/dockerfiles/spark/Dockerfile .
+    MAVEN_REPO=https://repo1.maven.org/maven2
+    wget --quiet \
+	 --timestamping $MAVEN_REPO/org/apache/hadoop/hadoop-aws/2.7.3/hadoop-aws-2.7.3.jar \
+	-P $SPARK_HOME/jars/
+    wget --quiet \
+	 --timestamping $MAVEN_REPO/com/amazonaws/aws-java-sdk/1.7.4/aws-java-sdk-1.7.4.jar \
+	-P $SPARK_HOME/jars/
+
+    docker build --no-cache \
+	   -f kubernetes/dockerfiles/spark/Dockerfile . \
+	   -t renciorg/spark-alluxio:latest \
+	   -t renciorg/spark-alluxio:v0.1
+
+    source ~/.dockerhub
+    docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD    
+    docker push renciorg/spark-alluxio:latest
+    docker push renciorg/spark-alluxio:v0.1 
 }
 make_account () {
     kubectl delete --ignore-not-found=true --namespace=$NAMESPACE serviceaccount spark
@@ -76,6 +98,3 @@ build () {
 init
 
 $*
-
-
-#  docker build --no-cache -f kubernetes/dockerfiles/spark/Dockerfile . -t renciorg/spark-alluxio:latest -t renciorg/spark-alluxio:v0.1 

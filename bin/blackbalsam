@@ -11,7 +11,7 @@
 ## 
 ##
 #############################################################
-set -x
+#set -x
 set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -41,12 +41,17 @@ spark () {
         spark/spunk gen
     }
     up () {
+	f () {
         if [ "$(kubectl get -n $NAMESPACE list deployment 2>&1 | grep -c 1/1 | grep -v 'No resources')" != 0 ]; then
             echo spark is already running. use down first.
         else
             make_namespace
             spark/spunk up
         fi
+	}
+	pushd $BLACKBALSAM_HOME/spark-alluxio
+	./build build
+	popd
     }
     down () {
         spark/spunk down
@@ -122,15 +127,7 @@ hub () {
                 --namespace $NAMESPACE hub \
                 --type json \
                 --patch '[{"op": "replace", "path": "/spec/template/spec/containers/0/command", "value": ["bash", "-c", "\nmkdir -p ~/hotfix\ncp -r /usr/local/lib/python3.6/dist-packages/kubespawner ~/hotfix\nls -R ~/hotfix\npatch ~/hotfix/kubespawner/spawner.py << EOT\n72c72\n<             key=lambda x: x.last_timestamp,\n---\n>             key=lambda x: x.last_timestamp and x.last_timestamp.timestamp() or 0.,\nEOT\n\nPYTHONPATH=$HOME/hotfix jupyterhub --config /srv/jupyterhub_config.py --upgrade-db\n"]}]'
-        x ()  {
-         for x in {0..4}; do
-             echo kubectl patch deploy \
-                --namespace $NAMESPACE hub \
-                --type json \
-                --patch '[{"op": "replace", "path": "/spec/template/spec/containers/'$x'/command", "value": ["bash", "-c", "\nmkdir -p ~/hotfix\ncp -r /usr/local/lib/python3.6/dist-packages/kubespawner ~/hotfix\nls -R ~/hotfix\npatch ~/hotfix/kubespawner/spawner.py << EOT\n72c72\n<             key=lambda x: x.last_timestamp,\n---\n>             key=lambda x: x.last_timestamp and x.last_timestamp.timestamp() or 0.,\nEOT\n\nPYTHONPATH=$HOME/hotfix jupyterhub --config /srv/jupyterhub_config.py --upgrade-db\n"]}]'
-         done
-        }
-        echo done patch
+
     }
     down () {
         helm version
@@ -143,10 +140,9 @@ hub () {
         down
         up
     }
-    forward () {
-        kubectl port-forward -n $NAMESPACE service/proxy-public 8888:80 #--address 0.0.0.0
-    }
-    
+#    forward () {
+#        kubectl port-forward -n $NAMESPACE service/proxy-public 8888:80 #--address 0.0.0.0
+#    }    
     $*
 }
 #############################################################
@@ -207,7 +203,7 @@ minio () {
 #############################################################
 alluxio () {
     up () {
-        echo "configuring and starting alluxio..."
+        echo "Configuring and starting alluxio..."
         export ALLUXIO_MASTER_HOST=alluxio-master-0
         export MINIO_BUCKET=covid-19
         export MINIO_HOST=minio
@@ -217,11 +213,18 @@ alluxio () {
         export alluxio_conf="alluxio-k8s/singleMaster-localJournal/alluxio-configmap.yaml"
         envsubst < ${alluxio_conf}.template > $alluxio_conf
         echo "  configured. creating kubernetes artifacts."
-        kubectl create --namespace $NAMESPACE --recursive=true -f alluxio-k8s #/singleMaster-localJournal/
+        kubectl create \
+		--namespace $NAMESPACE \
+		--recursive=true \
+		-f alluxio-k8s
     }
     down () {
         echo "stopping alluxio..."
-        kubectl delete --ignore-not-found=true --namespace $NAMESPACE --recursive=true -f alluxio-k8s
+        kubectl delete \
+		--ignore-not-found=true \
+		--namespace $NAMESPACE \
+		--recursive=true \
+		-f alluxio-k8s
     }
     $*
 }
@@ -281,6 +284,41 @@ init () {
     fi
     helm init --service-account tiller --history-max 100 --wait
     }
+}
+
+#############################################################
+##
+##  Help.
+##
+#############################################################
+help () {
+    help_message="\
+$0 is a data science cluster architecture.
+
+User Experience Services:
+  hub   \tConfigure, install, and uninstall JupyterHub notebook server.
+
+Compute Services:
+  spark \tBuild, publish, Apache Spark and Alluxio containers.
+
+Storage Services:
+  alluxio\tManage cluster deployment of Alluxio services.
+  minio \tManage cluster deployment of the Minio S3 system.
+
+Proxy Services:
+  proxy \tManage the programmable Ambassador edge proxy.
+
+Overall Management:
+  status\tReport on Kubernetes components of the system in detail.
+  up    \tExecute configurations and start all services.
+  down  \tStop all cluster components and services
+  nodes \tDisplay detailed usage and status for cluster nodes.
+
+Other Commands:
+  help  \tShow this message.
+
+"
+    printf "$help_message"
 }
 
 init
