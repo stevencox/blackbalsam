@@ -58,6 +58,30 @@ spark () {
     }
     $*
 }
+bridge () {
+    mkdir -p bridge
+    for node in {1..5}; do
+        cp $ETC/bridge/bridge.yaml.template bridge/bridge-${node}.yaml
+        yaml-set \
+            --change="metadata.name" \
+            --value="n${node}-blackbalsam.blackbalsam-cluster.edc.renci.org" \
+            -F dquote \
+            bridge/bridge-${node}.yaml
+        yaml-set \
+            --change="spec.externalName" \
+            --value="n${node}-blackbalsam.blackbalsam-cluster.edc.renci.org" \
+            -F dquote \
+            bridge/bridge-${node}.yaml
+    done
+    up ()  {
+        kubectl --namespace=$NAMESPACE apply -f bridge/
+    }
+    down () {
+        kubectl --namespace=$NAMESPACE delete -f bridge/
+    }
+    $*
+}
+
 #############################################################
 ##
 ##  Manage JupyterHub.

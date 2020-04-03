@@ -40,9 +40,10 @@ spec:
         heritage: Tiller
         role: alluxio-master
     spec:
-#      hostNetwork: false
-      hostNetwork: true
-      dnsPolicy: ClusterFirstWithHostNet #ClusterFirst
+      hostNetwork: false
+#      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+#      dnsPolicy: ClusterFirstWithHostNet
       nodeSelector:
       securityContext:
         fsGroup: 1000
