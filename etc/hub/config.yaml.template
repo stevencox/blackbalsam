@@ -2,7 +2,7 @@ singleuser:
   image:
     # A docker container with a number of kernels and ability to connect to Jib Spark.
     name: "heliumdatastage/all-spark-notebook"
-    tag: "v0.1"
+    tag: "v0.2"
 
 hub:
   baseUrl: /blackbalsam/

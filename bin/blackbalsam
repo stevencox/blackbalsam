@@ -205,6 +205,7 @@ alluxio () {
     up () {
         echo "Configuring and starting alluxio..."
         export ALLUXIO_MASTER_HOST=alluxio-master-0
+        export ALLUXIO_WORKER_HOST=alluxio-worker
         export MINIO_BUCKET=covid-19
         export MINIO_HOST=minio
         export MINIO_PORT=9000
@@ -225,6 +226,10 @@ alluxio () {
 		--namespace $NAMESPACE \
 		--recursive=true \
 		-f alluxio-k8s
+    }
+    restart () {
+        down
+        up
     }
     $*
 }
