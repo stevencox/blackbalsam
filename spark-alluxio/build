@@ -60,27 +60,12 @@ build_spark () {
 	 --timestamping $MAVEN_REPO/com/amazonaws/aws-java-sdk/1.7.4/aws-java-sdk-1.7.4.jar \
 	-P $SPARK_HOME/jars/
 
-#    docker build --no-cache \
-#	   -f kubernetes/dockerfiles/spark/Dockerfile . \
-#	   -t renciorg/spark-alluxio:latest \
-#	   -t renciorg/spark-alluxio:v0.1
-#    cp $APP_HOME/etc/Dockerfile kubernetes/dockerfiles/spark/Dockerfile.$NAMESPACE 
-#    docker build --no-cache \
-#	   -f kubernetes/dockerfiles/spark/Dockerfile.$NAMESPACE . \
-#	   -t renciorg/spark-alluxio:latest \
-#	   -t renciorg/spark-alluxio:v0.1
-#    docker build --no-cache \
-#	   -f kubernetes/dockerfiles/spark/bindings/python/Dockerfile . \
-#	   -t renciorg/spark-alluxio:latest \
-#	   -t renciorg/spark-alluxio:v0.1
-
     source ~/.dockerhub
     docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD    
 #    ./bin/docker-image-tool.sh -r renciorg -t v0.1 -b spark build
-    ./bin/docker-image-tool.sh -r renciorg -t v0.1 -b spark push
-    
-#    docker push renciorg/spark-alluxio:latest
-#    docker push renciorg/spark-alluxio:v0.1 
+#    ./bin/docker-image-tool.sh -r renciorg -t v0.1 -b spark push
+    ./bin/docker-image-tool.sh -r renciorg -t v0.2 -b spark -p $APP_HOME/Dockerfile.pyspark build
+    ./bin/docker-image-tool.sh -r renciorg -t v0.2 -b spark -p $APP_HOME/Dockerfile.pyspark push
 }
 make_account () {
     kubectl delete --ignore-not-found=true --namespace=$NAMESPACE serviceaccount spark
