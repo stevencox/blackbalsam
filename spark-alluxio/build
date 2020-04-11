@@ -10,7 +10,11 @@ export K8S_API_HOST=localhost
 export K8S_API_HOST=127.0.0.1
 export ALLUXIO_MASTER=alluxio-master-0
 
-export K8S_API_HOST=172.25.16.201
+export K8S_API_PORT=6443
+export K8S_API_HOST=n1-blackbalsam.blackbalsam-cluster.edc.renci.org
+export K8S_API_PROTO=https
+export K8S_API_ENDPOINT=$K8S_API_PROTO://$K8S_API_HOST:$K8S_API_PORT
+export K8S_API_ENDPOINT=https://172.25.16.202:6443
 
 export SPARK_VERSION_NUM=2.4.5
 export SPARK_VERSION=spark-$SPARK_VERSION_NUM
@@ -56,15 +60,12 @@ build_spark () {
 	 --timestamping $MAVEN_REPO/com/amazonaws/aws-java-sdk/1.7.4/aws-java-sdk-1.7.4.jar \
 	-P $SPARK_HOME/jars/
 
-    docker build --no-cache \
-	   -f kubernetes/dockerfiles/spark/Dockerfile . \
-	   -t renciorg/spark-alluxio:latest \
-	   -t renciorg/spark-alluxio:v0.1
-
     source ~/.dockerhub
     docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD    
-    docker push renciorg/spark-alluxio:latest
-    docker push renciorg/spark-alluxio:v0.1 
+#    ./bin/docker-image-tool.sh -r renciorg -t v0.1 -b spark build
+#    ./bin/docker-image-tool.sh -r renciorg -t v0.1 -b spark push
+    ./bin/docker-image-tool.sh -r renciorg -t v0.2 -b spark -p $APP_HOME/Dockerfile.pyspark build
+    ./bin/docker-image-tool.sh -r renciorg -t v0.2 -b spark -p $APP_HOME/Dockerfile.pyspark push
 }
 make_account () {
     kubectl delete --ignore-not-found=true --namespace=$NAMESPACE serviceaccount spark
@@ -76,13 +77,13 @@ make_account () {
 }
 test () {
     ./bin/spark-submit \
-        --master k8s://http://$K8S_API_HOST:8080 \
+        --master k8s://$K8S_API_ENDPOINT \
         --deploy-mode cluster --name spark-alluxio --conf spark.executor.instances=1 \
         --class org.apache.spark.examples.JavaWordCount \
         --driver-memory 500m --executor-memory 1g \
         --conf spark.kubernetes.namespace=$NAMESPACE \
         --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
-        --conf spark.kubernetes.container.image=spark-alluxio \
+        --conf spark.kubernetes.container.image=renciorg/spark-alluxio:v1.0 \
         --conf spark.kubernetes.executor.volumes.hostPath.alluxio-domain.mount.path=/opt/domain \
         --conf spark.kubernetes.executor.volumes.hostPath.alluxio-domain.mount.readOnly=true \
         --conf spark.kubernetes.executor.volumes.hostPath.alluxio-domain.options.path=/tmp/alluxio-domain \
