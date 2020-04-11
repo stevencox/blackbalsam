@@ -10,6 +10,8 @@ export K8S_API_HOST=localhost
 export K8S_API_HOST=127.0.0.1
 export ALLUXIO_MASTER=alluxio-master-0
 
+export K8S_API_HOST=172.25.16.201
+
 export SPARK_VERSION_NUM=2.4.5
 export SPARK_VERSION=spark-$SPARK_VERSION_NUM
 export APP_HOME=$PWD

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: blackbalsam-jhub-nfs-pvc
+  labels:
+    app: blackbalsam
+spec:
+  storageClassName: nfs-blackbalsam-dynamic-sc
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi

@@ -197,3 +197,64 @@ dataset = sc.textFile("alluxio://alluxio-master-0:19998/LICENSE")
 dataset.map(lambda v: v * 6).collect ()
 
 print (r)
+
+
+--------------------------------------------------------
+n1-blackbalsam.blackbalsam-cluster.edc.renci.org is the first of 5, and there's a nfs host with same domain.
+2:01
+"/etc/kubernetes/admin.conf" on n1 is the kubeconfig.
+
+
+
+-----------------------------
+$ kc exec -it alluxio-master-0 -- /bin/bash
+bash-4.4$ alluxio fsadmin report capacity
+Capacity information for all workers: 
+    Total Capacity: 5120.00MB
+        Tier: MEM  Size: 5120.00MB
+    Used Capacity: 0B
+        Tier: MEM  Size: 0B
+    Used Percentage: 0%
+    Free Percentage: 100%
+
+Worker Name                                                   Last Heartbeat   Storage       MEM
+n3-blackbalsam-cluster.blackbalsam-cluster.edc.renci.org      0                capacity      1024.00MB
+                                                                               used          0B (0%)
+n4-blackbalsam-cluster.blackbalsam-cluster.edc.renci.org      0                capacity      1024.00MB
+                                                                               used          0B (0%)
+n1-blackbalsam-cluster.blackbalsam-cluster.edc.renci.org      0                capacity      1024.00MB
+                                                                               used          0B (0%)
+n5-blackbalsam-cluster.blackbalsam-cluster.edc.renci.org      0                capacity      1024.00MB
+                                                                               used          0B (0%)
+n2-blackbalsam-cluster.blackbalsam-cluster.edc.renci.org      0                capacity      1024.00MB
+                                                                               used          0B (0%)
+bash-4.4$ alluxio fs copyFromLocal LICENSE /
+Apr 05, 2020 3:22:17 PM io.grpc.internal.ManagedChannelImpl$NameResolverListener handleErrorInSyncContext
+WARNING: [Channel<9>: (n2-blackbalsam-cluster.blackbalsam-cluster.edc.renci.org:29999)] Failed to resolve name. status=Status{code=UNAVAILABLE, description=Unable to resolve host n2-blackbalsam-cluster.blackbalsam-cluster.edc.renci.org, cause=java.lang.RuntimeException: java.net.UnknownHostException: n2-blackbalsam-cluster.blackbalsam-cluster.edc.renci.org
+	at io.grpc.internal.DnsNameResolver.resolveAll(DnsNameResolver.java:441)
+	at io.grpc.internal.DnsNameResolver$Resolve.resolveInternal(DnsNameResolver.java:272)
+	at io.grpc.internal.DnsNameResolver$Resolve.run(DnsNameResolver.java:228)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: java.net.UnknownHostException: n2-blackbalsam-cluster.blackbalsam-cluster.edc.renci.org
+	at java.net.InetAddress.getAllByName0(InetAddress.java:1281)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1193)
+	at java.net.InetAddress.getAllByName(InetAddress.java:1127)
+	at io.grpc.internal.DnsNameResolver$JdkAddressResolver.resolveAddress(DnsNameResolver.java:651)
+	at io.grpc.internal.DnsNameResolver.resolveAll(DnsNameResolver.java:409)
+	... 5 more
+}
+Failed to cache: Target Unavailable. GrpcChannelKey{ClientType=DefaultBlockWorkerClient, ClientHostname=alluxio-master-0.alluxio-master.blackbalsam.svc.blackbalsam-cluster.edc.renci.org, ServerAddress=GrpcServerAddress{HostName=n2-blackbalsam-cluster.blackbalsam-cluster.edc.renci.org, SocketAddress=n2-blackbalsam-cluster.blackbalsam-cluster.edc.renci.org:29999}, ChannelId=97e1273c-ab87-4eb8-b2ff-2717d8373f0c}
+
+
+bash-4.4$ wget n1-blackbalsam-cluster.edc.renci.org
+Connecting to n1-blackbalsam-cluster.edc.renci.org (172.25.16.201:80)
+wget: can't connect to remote host (172.25.16.201): Connection refused
+bash-4.4$ wget stars-c0.edc.renci.org
+Connecting to stars-c0.edc.renci.org (172.25.8.116:80)
+wget: can't connect to remote host (172.25.8.116): Connection refused
+bash-4.4$ wget n1-blackbalsam.blackbalsam-cluster.edc.renci.org
+wget: bad address 'n1-blackbalsam.blackbalsam-cluster.edc.renci.org'
+
+

@@ -41,7 +41,8 @@ spec:
         role: alluxio-master
     spec:
       hostNetwork: false
-      dnsPolicy: ClusterFirst
+      #dnsPolicy: ClusterFirst
+      dnsPolicy: ClusterFirstWithHostNet
       nodeSelector:
       securityContext:
         fsGroup: 1000

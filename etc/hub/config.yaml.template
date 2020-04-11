@@ -1,8 +1,52 @@
+auth:
+  type: github
+  github:
+    clientId: ""
+    clientSecret: ""
+    callbackUrl: "http://blackbalsam.renci.org/blackbalsam/oauth_callback"
+  admin:
+    access: true
+    users:
+      - stevencox
+      - pj-linebaugh
+  whitelist:
+    users:
+      - cbizon
+      - ashokohio
+      - StanAhalt
+      - YaphetKG
+      - ananyagithub2
+      - muralikarthikk
+      - ismagilani
+      - satusky
+      
 singleuser:
+  memory:
+    limit: 5G
+    guarantee: 5G
+  storage:
+    dynamic:
+      storageClass: nfs-blackbalsam-dynamic-sc
+    extraVolumes:
+      - name: jupyterhub-shared
+        persistentVolumeClaim:
+          claimName: blackbalsam-jhub-nfs-pvc
+    extraVolumeMounts:
+      - name: jupyterhub-shared
+        mountPath: /home/shared
   image:
     # A docker container with a number of kernels and ability to connect to Jib Spark.
     name: "heliumdatastage/all-spark-notebook"
-    tag: "v0.1"
+    tag: "v0.3"
+  kubespawner_override:
+    service_account: spark
+    
+#  profileList:
+#    - display_name: "Python / R / Scala Spark Notebook"
+#      description: "Python / R / Scala Spark Notebook"
+#      default: true
+#      kubespawner_override:
+#        service_account: spark
 
 hub:
   baseUrl: /blackbalsam/
