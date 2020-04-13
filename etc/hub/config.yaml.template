@@ -23,7 +23,7 @@ auth:
 singleuser:
   memory:
     limit: 5G
-    guarantee: 5G
+    guarantee: 2G
   storage:
     dynamic:
       storageClass: nfs-blackbalsam-dynamic-sc
@@ -35,9 +35,9 @@ singleuser:
       - name: jupyterhub-shared
         mountPath: /home/shared
   image:
-    # A docker container with a number of kernels and ability to connect to Jib Spark.
+    # A docker container with a number of kernels, connectivity to Spark, Minio, etc.
     name: "heliumdatastage/all-spark-notebook"
-    tag: "v0.3"
+    tag: "0.0.3"
   kubespawner_override:
     service_account: spark
     

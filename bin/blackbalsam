@@ -40,28 +40,6 @@ make_namespace () {
     fi
 }
 spark () {
-    conf () {
-        spark/spunk gen
-    }
-    up () {
-	f () {
-        if [ "$(kubectl get -n $NAMESPACE list deployment 2>&1 | grep -c 1/1 | grep -v 'No resources')" != 0 ]; then
-            echo spark is already running. use down first.
-        else
-            make_namespace
-            spark/spunk up
-        fi
-	}
-	pushd $BLACKBALSAM_HOME/spark-alluxio
-	./build build
-	popd
-    }
-    down () {
-        spark/spunk down
-    }
-    $*
-}
-spark () {
     up () {
 	pushd $BLACKBALSAM_HOME/spark-alluxio
 	#./build build
