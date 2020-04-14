@@ -21,6 +21,7 @@ auth:
       - satusky
       
 singleuser:
+  serviceAccountName: spark
   memory:
     limit: 5G
     guarantee: 2G
@@ -38,15 +39,6 @@ singleuser:
     # A docker container with a number of kernels, connectivity to Spark, Minio, etc.
     name: "heliumdatastage/all-spark-notebook"
     tag: "0.0.3"
-  kubespawner_override:
-    service_account: spark
-    
-#  profileList:
-#    - display_name: "Python / R / Scala Spark Notebook"
-#      description: "Python / R / Scala Spark Notebook"
-#      default: true
-#      kubespawner_override:
-#        service_account: spark
 
 hub:
   baseUrl: /blackbalsam/

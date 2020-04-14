@@ -62,8 +62,6 @@ build_spark () {
 
     source ~/.dockerhub
     docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD    
-#    ./bin/docker-image-tool.sh -r renciorg -t v0.1 -b spark build
-#    ./bin/docker-image-tool.sh -r renciorg -t v0.1 -b spark push
     ./bin/docker-image-tool.sh -r renciorg -t v0.2 -b spark -p $APP_HOME/Dockerfile.pyspark build
     ./bin/docker-image-tool.sh -r renciorg -t v0.2 -b spark -p $APP_HOME/Dockerfile.pyspark push
 }
@@ -78,7 +76,7 @@ make_account () {
 test () {
     ./bin/spark-submit \
         --master k8s://$K8S_API_ENDPOINT \
-        --deploy-mode cluster --name spark-alluxio --conf spark.executor.instances=1 \
+        --deploy-mode cluster --name spark-alluxio \--conf spark.executor.instances=1 \
         --class org.apache.spark.examples.JavaWordCount \
         --driver-memory 500m --executor-memory 1g \
         --conf spark.kubernetes.namespace=$NAMESPACE \
@@ -90,6 +88,20 @@ test () {
         --conf spark.kubernetes.executor.volumes.hostPath.alluxio-domain.options.type=Directory \
         local:///opt/spark/examples/jars/spark-examples_2.11-$SPARK_VERSION_NUM.jar \
         alluxio://$ALLUXIO_MASTER:19998/LICENSE
+}
+test () {
+    K8S_API_ENDPOINT="http://n1-blackbalsam.blackbalsam-cluster.edc.renci.org:8080"
+    ./bin/spark-submit \
+	--master "k8s://$K8S_API_ENDPOINT" \
+	--deploy-mode cluster \
+	--name spark-test --conf spark.executor.instances=1 \
+        --class org.apache.spark.examples.JavaWordCount \
+        --driver-memory 500m --executor-memory 1g \
+        --conf spark.kubernetes.namespace=$NAMESPACE \
+        --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+        --conf spark.kubernetes.container.image=renciorg/spark-py:v0.2 \
+        local:///opt/spark/examples/jars/spark-examples_2.11-$SPARK_VERSION_NUM.jar \
+        /opt/entrypoint.sh
 }
 
 build () {
