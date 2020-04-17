@@ -23,7 +23,7 @@ export SPARK_DIST=$SPARK_VERSION-bin-hadoop2.7
 export SPARK_HOME=$PWD/$SPARK_DIST
 export ALLUXIO_VERSION_NUM=2.2.0
 export ALLUXIO_VERSION=alluxio-2.2.0
-export SPARK_PY_VERSION=0.0.4
+export SPARK_PY_VERSION=0.0.41
 
 init () {
     if [ ! -d $SPARK_HOME ]; then
@@ -68,14 +68,14 @@ get_spark_dep_group () {
     done
 }
 get_spark_deps () {
-    deps="aws-java-sdk-kms aws-java-sdk-s3 aws-java-sdk-dynamodb aws-java-sdk-core aws-java-sdk"
+    deps="aws-java-sdk"
     dep_group="com/amazonaws"
-    dep_group_ver=1.11.534
+    dep_group_ver=1.7.4
     get_spark_dep_group "$deps" $dep_group $dep_group_ver
     
     deps="hadoop-aws"
     dep_group="org/apache/hadoop"
-    dep_group_ver=3.1.2
+    dep_group_ver=2.7.3
     get_spark_dep_group "$deps" $dep_group $dep_group_ver
 }
 build_spark () {
