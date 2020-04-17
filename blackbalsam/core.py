@@ -164,7 +164,7 @@ class Blackbalsam:
             "spark.hadoop.fs.s3a.attempts.maximum"  : "3",
             "spark.hadoop.fs.s3a.connection.timeout": "10000"
         }
-        environ_config.update (default_config)
+        environ_config.update (default_conf)
         environ_config.update (conf)
         sc = SparkContext (conf=SparkConf().setAll (list (environ_config.items ())))
         global sqlContext
