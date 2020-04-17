@@ -32,7 +32,7 @@ class Corpus:
         if not os.path.exists (self.location):
             os.makedirs (self.location)
             
-        logger.info ("populating corpus")
+        logger.info ("populating corpus...")
         for url in urls:
             logger.debug (f"getting url {url}")
             base_name = os.path.basename (url)
@@ -102,13 +102,13 @@ class Blackbalsam:
     def get_config (self):
         config = {}
         home_dir = os.path.expanduser("~")
-        path = os.path.join (home_dir, ".blackbalsam.yaml")
-        if os.path.exists (path):
-            config = yaml.safe_load (path)
-        else:
-            path = os.path.join (self.shared_storage_path,
-                                 "/blackbalsam/.blackbalsam.yaml")
-            config = yaml.safe_load (path)
+        system_path = os.path.join (home_dir, ".blackbalsam.yaml")
+        user_path = os.path.join (self.shared_storage_path,
+                             "/blackbalsam/.blackbalsam.yaml")
+        if os.path.exists (system_path):
+            config = yaml.safe_load (system_path)
+        elif os.path.exists (user_path):
+            config = yaml.safe_load (user_path)
         return config
 
     """
