@@ -1,0 +1,55 @@
+#!/bin/bash
+
+set -x
+spark_version=${APACHE_SPARK_VERSION:-2.4.5}
+hadoop_version=${HADOOP_VERSION:-3.1.3}
+echo spark_version: $spark_version
+echo hadoop_version: $hadoop_version
+echo spark_home $spark_home
+
+get_spark () {
+#    if [ ! -d spark-${spark_version}-bin-without-hadoop ]; then
+	wget --quiet --timestamping \
+	     http://us.mirrors.quenda.co/apache/spark/spark-${spark_version}/spark-${spark_version}-bin-without-hadoop.tgz \
+	    && tar xvzf spark-${spark_version}-bin-without-hadoop.tgz
+	pushd spark-${spark_version}-bin-without-hadoop/jars
+	wget --quiet --timestamping https://oak-tree.tech/documents/60/joda-time-2.9.9.jar \
+	    && wget --quiet --timestamping https://oak-tree.tech/documents/61/httpclient-4.5.3.jar \
+	    && wget --quiet --timestamping https://oak-tree.tech/documents/62/aws-java-sdk-s3-1.11.534.jar \
+	    && wget --quiet --timestamping https://oak-tree.tech/documents/63/aws-java-sdk-kms-1.11.534.jar \
+	    && wget --quiet --timestamping https://oak-tree.tech/documents/64/aws-java-sdk-dynamodb-1.11.534.jar \
+	    && wget --quiet --timestamping https://oak-tree.tech/documents/65/aws-java-sdk-core-1.11.534.jar \
+	    && wget --quiet --timestamping https://oak-tree.tech/documents/66/aws-java-sdk-1.11.534.jar \
+	    && wget --quiet --timestamping https://oak-tree.tech/documents/67/hadoop-aws-3.1.2.jar \
+	    && wget --quiet --timestamping https://oak-tree.tech/documents/68/slf4j-api-1.7.29.jar \
+	    && wget --quiet --timestamping https://oak-tree.tech/documents/69/slf4j-log4j12-1.7.29.jar
+	popd
+	if [ "$1" == "clean" ]; then \
+	    echo cleaning up spark installer...
+	    rm -rf spark-${spark_version}-bin-without-hadoop.tgz
+	fi
+#    fi
+#    if [ ! -d hadoop-${hadoop_version} ]; then
+	wget --quiet --timestamping \
+	     http://us.mirrors.quenda.co/apache/hadoop/common/hadoop-${hadoop_version}/hadoop-${hadoop_version}.tar.gz \
+	    && tar xvzf hadoop-${hadoop_version}.tar.gz \
+	    && rm -rf hadoop-${hadoop_version}/shared/doc
+	if [ "$1" == "clean" ]; then \
+	    echo cleaning up hadoop installer...
+	    rm -rf hadoop-${hadoop_version}.tar.gz
+	fi
+#    fi
+}
+rm_libs () {
+    rm spark-${spark_version}-bin-without-hadoop.tgz
+    rm hadoop-${hadoop_version}.tar.gz
+}
+pyspark () {
+    pyspark \
+	--conf spark.hadoop.fs.s3a.endpoint=http://localhost:9000 \
+	--conf spark.hadoop.fs.s3a.access.key=minio \
+	--conf spark.hadoop.fs.s3a.secret.key=minio123 \
+	--conf spark.hadoop.fs.s3a.path.style.access=true \
+	--conf spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem
+}
+$*
