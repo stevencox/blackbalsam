@@ -118,7 +118,7 @@ class Blackbalsam:
     4. retry s3
     """
     
-    def get_spark_context (self, conf={}):
+    def get_spark (self, conf={}):
         environ_config = self.get_config ()
         
         app_name = "spark.app.name"
