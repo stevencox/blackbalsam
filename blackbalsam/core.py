@@ -169,7 +169,7 @@ class Blackbalsam:
         sc = SparkContext (conf=SparkConf().setAll (list (environ_config.items ())))
         global sqlContext
         sqlContext = SQLContext (sc)
-        return sc
+        return SparkSession(sc)
         
     def alluxio_read (self, sc, path):
         return sc.textFile(f"alluxio://{self.alluxio_host_port}{path}")
