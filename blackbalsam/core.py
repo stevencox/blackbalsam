@@ -152,7 +152,7 @@ class Blackbalsam:
             # Security & RBAC
             "spark.kubernetes.authenticate.serviceAccountName": "spark",
             # S3 / AWS / Minio
-#            "spark.jars.packages"                   : "org.apache.hadoop:hadoop-aws:2.7.1,com.amazonaws:aws-java-sdk:1.10.8",
+            "spark.jars.packages"                   : "org.apache.hadoop:hadoop-aws:2.7.1,com.amazonaws:aws-java-sdk:1.10.8",
             "spark.hadoop.fs.s3a.endpoint"          : f"http://{self.store.minio_endpoint}",
             "spark.hadoop.fs.s3a.access.key"        : self.store.minio_access_key,
             "spark.hadoop.fs.s3a.secret.key"        : self.store.minio_secret_key,
