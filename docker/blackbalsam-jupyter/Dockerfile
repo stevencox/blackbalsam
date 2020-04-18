@@ -8,7 +8,7 @@ LABEL maintainer="RENCI <info@renci.org>"
 USER root
 
 # Spark dependencies
-ENV APACHE_SPARK_VERSION=2.4.5 \
+ENV SPARK_VERSION=2.4.5 \
     HADOOP_VERSION=3.1.3 \
     INSTALL_DIR=/usr/local
 
@@ -23,7 +23,7 @@ RUN cd $INSTALL_DIR && \
     chmod +x ./libspark && \
     ./libspark get_spark clean && \
     rm ./libspark && \
-    ln -s spark-${APACHE_SPARK_VERSION}-bin-without-hadoop spark && \
+    ln -s spark-${SPARK_VERSION}-bin-without-hadoop spark && \
     ln -s hadoop-${HADOOP_VERSION} hadoop
 
 # Configure environment
