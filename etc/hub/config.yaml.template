@@ -37,8 +37,9 @@ singleuser:
         mountPath: /home/shared
   image:
     # A docker container with a number of kernels, connectivity to Spark, Minio, etc.
-    name: "heliumdatastage/all-spark-notebook"
-    tag: "0.0.42"
+#    name: "heliumdatastage/all-spark-notebook"
+    name: "renciorg/blackbalsam-jupyter"
+    tag: "0.0.1"
 
 hub:
   baseUrl: /blackbalsam/

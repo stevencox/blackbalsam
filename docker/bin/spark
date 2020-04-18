@@ -3,27 +3,6 @@
 set -x
 set -e
 
-f () {
-export NAMESPACE=blackbalsam
-export K8S_API_HOST=0.0.0.0
-export K8S_API_HOST=localhost
-export K8S_API_HOST=127.0.0.1
-export ALLUXIO_MASTER=alluxio-master-0
-export K8S_API_PORT=6443
-export K8S_API_HOST=n1-blackbalsam.blackbalsam-cluster.edc.renci.org
-export K8S_API_PROTO=https
-export K8S_API_ENDPOINT=$K8S_API_PROTO://$K8S_API_HOST:$K8S_API_PORT
-export K8S_API_ENDPOINT=https://172.25.16.202:6443
-
-export SPARK_VERSION_NUM=2.4.5
-export SPARK_VERSION=spark-$SPARK_VERSION_NUM
-export APP_HOME=$PWD
-export SPARK_DIST=$SPARK_VERSION-bin-hadoop2.7
-export SPARK_HOME=$PWD/$SPARK_DIST
-export ALLUXIO_VERSION_NUM=2.2.0
-export ALLUXIO_VERSION=alluxio-2.2.0
-export SPARK_PY_VERSION=0.0.1
-}
 # Configure environment
 export ALLUXIO_VERSION_NUM=2.2.0
 export ALLUXIO_VERSION=alluxio-2.2.0    

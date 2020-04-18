@@ -148,11 +148,11 @@ class Blackbalsam:
                self.shared_storage_path,
             # Docker Image and Python 
             "spark.kubernetes.pyspark.pythonVersion" : "3",
-            "spark.kubernetes.container.image" : "renciorg/spark-py:0.0.41", 
+            "spark.kubernetes.container.image" : "renciorg/spark-py:0.0.1", 
             # Security & RBAC
             "spark.kubernetes.authenticate.serviceAccountName": "spark",
             # S3 / AWS / Minio
-            "spark.jars.packages"                   : "org.apache.hadoop:hadoop-aws:2.7.1,com.amazonaws:aws-java-sdk:1.10.8",
+#            "spark.jars.packages"                   : "org.apache.hadoop:hadoop-aws:2.7.1,com.amazonaws:aws-java-sdk:1.10.8",
             "spark.hadoop.fs.s3a.endpoint"          : f"http://{self.store.minio_endpoint}",
             "spark.hadoop.fs.s3a.access.key"        : self.store.minio_access_key,
             "spark.hadoop.fs.s3a.secret.key"        : self.store.minio_secret_key,
