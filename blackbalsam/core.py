@@ -156,7 +156,7 @@ class Blackbalsam:
             "spark.hadoop.fs.s3a.endpoint"          : f"http://{self.store.minio_endpoint}",
             "spark.hadoop.fs.s3a.access.key"        : self.store.minio_access_key,
             "spark.hadoop.fs.s3a.secret.key"        : self.store.minio_secret_key,
-            "spark.hadoop.fs.s3a.path.style.access" : "true",
+            "spark.hadoop.fs.s3a.path.style.access" : "True",
             "spark.hadoop.fs.s3a.connection.ssl.enabled": "false",
             "spark.hadoop.fs.s3a.connection.establish.timeout": "10000",
             "spark.hadoop.fs.s3a.impl"              : "org.apache.hadoop.fs.s3a.S3AFileSystem",
@@ -200,3 +200,6 @@ def y ():
                 break
             stream = tar.extractfile(member)
             objects.append (stream.read ())
+
+
+# https://github.com/mapreducelab/bigdata-helm-charts
