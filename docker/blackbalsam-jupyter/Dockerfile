@@ -51,12 +51,17 @@ RUN conda install nb_conda_kernels ipykernel && \
 
 ################################################################################################
 ##
-## Update Spark to include Alluxio bindings and configure the alluxio protocol.
+## Configure Spark. Include Alluxio bindings and configure the alluxio protocol.
 ##
 ################################################################################################
 COPY core-site.xml $SPARK_HOME/conf
 COPY alluxio-2.2.0-client.jar $SPARK_HOME/jars
 
+ENV SPARK_HOME=$INSTALL_DIR/spark
+ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.7-src.zip \
+    SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info" \
+    PATH=$PATH:$SPARK_HOME/bin
+    
 ################################################################################################
 ##
 ## Install
@@ -68,13 +73,15 @@ COPY alluxio-2.2.0-client.jar $SPARK_HOME/jars
 ##
 ################################################################################################
 RUN wget --quiet https://dl.min.io/client/mc/release/linux-amd64/mc -O $INSTALL_DIR/bin/mc && \
-    chmod +x $INSTALL_DIR/bin/mc && \
-    git clone https://github.com/stevencox/blackbalsam.git $HOME/blackbalsam && \
-    pip install --upgrade tensorflow keras gensim sklearn numpy torch && \
-    git clone https://github.com/thunlp/OpenKE.git && \
-    cd OpenKE/openke && \
-    ./make.sh
+    chmod +x $INSTALL_DIR/bin/mc
+#    && \
+#    pip install --upgrade tensorflow keras gensim sklearn numpy torch && \
+#    git clone https://github.com/thunlp/OpenKE.git && \
+#    cd OpenKE/openke && \
+#    ./make.sh
 
 USER $NB_UID
+
+RUN cd $HOME && git clone https://github.com/stevencox/blackbalsam.git $HOME/blackbalsam
 
 ENV PYTHONPATH=$PYTHONPATH:$HOME/blackbalsam:/home/shared/blackbalsam
