@@ -85,3 +85,14 @@ USER $NB_UID
 RUN cd $HOME && git clone https://github.com/stevencox/blackbalsam.git $HOME/blackbalsam
 
 ENV PYTHONPATH=$PYTHONPATH:$HOME/blackbalsam:/home/shared/blackbalsam
+
+# Configure environment
+ENV SPARK_HOME=$INSTALL_DIR/spark
+ENV PATH=$PATH:$SPARK_HOME/bin
+ENV HADOOP_HOME=$INSTALL_DIR/hadoop
+ENV PATH=$PATH:$HADOOP_HOME/bin
+RUN export HADOOP_CP=$($HADOOP_HOME/bin/hadoop classpath)
+ENV LD_LIBRARY_PATH=$HADOOP_HOME/lib/native
+ENV SPARK_DIST_CLASSPATH=$(hadoop classpath) #HADOOP_CP
+
+# using spark packages: https://gist.github.com/parente/c95fdaba5a9a066efaab
