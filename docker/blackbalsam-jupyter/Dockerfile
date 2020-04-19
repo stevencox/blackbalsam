@@ -17,82 +17,52 @@ RUN apt-get -y update && \
     apt-get install --no-install-recommends -y openjdk-8-jre-headless ca-certificates-java && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Spark and Hadoop
-COPY ./libspark $INSTALL_DIR
-RUN cd $INSTALL_DIR && \
-    chmod +x ./libspark && \
-    ./libspark get_spark clean && \
-    rm ./libspark && \
-    ln -s spark-${SPARK_VERSION}-bin-without-hadoop spark && \
-    ln -s hadoop-${HADOOP_VERSION} hadoop
+# Install and lnk Spark & Hadoop
+WORKDIR /opt
+COPY ./spark-${SPARK_VERSION}-bin-without-hadoop spark
+COPY ./hadoop-${HADOOP_VERSION} hadoop
+RUN ln -s $PWD/spark $INSTALL_DIR/spark && \
+        ln -s $PWD/hadoop $INSTALL_DIR/hadoop
 
-# Configure environment
+# Set Spark related environment variables.
+ARG SPARK_DIST_CLASSPATH_ARG=
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 ENV SPARK_HOME=$INSTALL_DIR/spark
-ENV PATH=$PATH:$SPARK_HOME/bin
+ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.7-src.zip \
+    SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info"
 ENV HADOOP_HOME=$INSTALL_DIR/hadoop
-ENV PATH=$PATH:$HADOOP_HOME/bin
-RUN export HADOOP_CP=$($HADOOP_HOME/bin/hadoop classpath)
+ENV PATH=$PATH:$HADOOP_HOME/bin:$SPARK_HOME/bin
 ENV LD_LIBRARY_PATH=$HADOOP_HOME/lib/native
-ENV SPARK_DIST_CLASSPATH=$HADOOP_CP
+ENV SPARK_DIST_CLASSPATH=$SPARK_DIST_CLASSPATH_ARG
 
-################################################################################################
-##
-## Start in the default Python3.7 environment.
-##
-## Install nb_conda in the base environment.
-## Add dependencies for connectivity to other systems and visualization:
-##  Minio needs to be at 5.0.6 for Python 3.7
-##
-################################################################################################
+# Configure a Python 3.7 Kernel
+#   Provide visualization with leaflet, seaborn
+#   Provide persistence with minio neo4j elasticsearch, ...
+#  Minio needs to be at 5.0.6 for Python 3.7
 RUN conda install nb_conda_kernels ipykernel && \
 	python -m IPython kernel install --prefix=/usr/local --name "Python3.7" && \
 	python -m pip install ipyleaflet seaborn minio==5.0.6 \
 	requests==2.22.0 neo4jrestclient==2.1.1 elasticsearch==7.5.1
 
-################################################################################################
-##
-## Configure Spark. Include Alluxio bindings and configure the alluxio protocol.
-##
-################################################################################################
-COPY core-site.xml $SPARK_HOME/conf
-COPY alluxio-2.2.0-client.jar $SPARK_HOME/jars
-
-ENV SPARK_HOME=$INSTALL_DIR/spark
-ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.7-src.zip \
-    SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info" \
-    PATH=$PATH:$SPARK_HOME/bin
-    
-################################################################################################
-##
-## Install
-##   * AWS S3 client libs.
-##   * Minio CLI client
-##   * Blackbalsam repo
-##   * Set PYTHONPATH
-##   * Install AI toolkit (Tensorflow, Keras, Gensim, PyTorch, sklearn, numpy, OpenKE)
-##
-################################################################################################
+# Install AI toolkit (Tensorflow, Keras, Gensim, PyTorch, sklearn, numpy, OpenKE)
 RUN wget --quiet https://dl.min.io/client/mc/release/linux-amd64/mc -O $INSTALL_DIR/bin/mc && \
-    chmod +x $INSTALL_DIR/bin/mc
-#    && \
-#    pip install --upgrade tensorflow keras gensim sklearn numpy torch && \
+        chmod +x $INSTALL_DIR/bin/mc
+#        && \
+#    pip install --upgrade tensorflow keras gensim sklearn numpy torch
 #    git clone https://github.com/thunlp/OpenKE.git && \
 #    cd OpenKE/openke && \
 #    ./make.sh
 
+# Be a non root user.
 USER $NB_UID
 
+# Go home.
+WORKDIR $HOME
+
+# Install Blackbalsam.
 RUN cd $HOME && git clone https://github.com/stevencox/blackbalsam.git $HOME/blackbalsam
 
+# Set the Python path.
 ENV PYTHONPATH=$PYTHONPATH:$HOME/blackbalsam:/home/shared/blackbalsam
-
-# Configure environment
-ENV SPARK_HOME=$INSTALL_DIR/spark
-ENV PATH=$PATH:$SPARK_HOME/bin
-ENV HADOOP_HOME=$INSTALL_DIR/hadoop
-ENV PATH=$PATH:$HADOOP_HOME/bin
-RUN export HADOOP_CP=$($HADOOP_HOME/bin/hadoop classpath)
-ENV LD_LIBRARY_PATH=$HADOOP_HOME/lib/native
-ENV SPARK_DIST_CLASSPATH=$(hadoop classpath) #HADOOP_CP
 
 # using spark packages: https://gist.github.com/parente/c95fdaba5a9a066efaab
