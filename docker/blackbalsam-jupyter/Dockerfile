@@ -87,6 +87,7 @@ RUN cd $HOME && git clone https://github.com/stevencox/blackbalsam.git $HOME/bla
 ENV PYTHONPATH=$PYTHONPATH:$HOME/blackbalsam:/home/shared/blackbalsam
 
 # Configure environment
+ENV JAVA_HOME=/usr
 ENV SPARK_HOME=$INSTALL_DIR/spark
 ENV PATH=$PATH:$SPARK_HOME/bin
 ENV HADOOP_HOME=$INSTALL_DIR/hadoop
