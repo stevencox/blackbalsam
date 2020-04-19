@@ -77,4 +77,4 @@ RUN wget --quiet https://dl.min.io/client/mc/release/linux-amd64/mc -O $INSTALL_
 
 USER $NB_UID
 
-RUN export PYTHONPATH=$PYTHONPATH:$HOME/blackbalsam:/home/shared/blackbalsam/blackbalsam
+ENV PYTHONPATH=$PYTHONPATH:$HOME/blackbalsam:/home/shared/blackbalsam
