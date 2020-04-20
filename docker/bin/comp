@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -x
+set -e
+
 repo=renciorg
 
 function get_ver () {
@@ -16,7 +19,7 @@ function get_ver () {
 }
 prep () {
     export APP=$PWD
-    pushd blackbalsam-jupyter
+    pushd $1
     $APP/bin/spark build-spark
     popd
     pushd spark
@@ -25,7 +28,7 @@ prep () {
 #    $APP/bin/spark configure_alluxio
     popd
 }
-export SPARK_DIST_CLASSPATH_ARG='/usr/local/hadoop/etc/hadoop:/usr/local/hadoop/share/hadoop/common/lib/*:/usr/local/hadoop/share/hadoop/common/*:/usr/local/hadoop/share/hadoop/hdfs:/usr/local/hadoop/share/hadoop/hdfs/lib/*:/usr/local/hadoop/share/hadoop/hdfs/*:/usr/local/hadoop/share/hadoop/mapreduce/lib/*:/usr/local/hadoop/share/hadoop/mapreduce/*:/usr/local/hadoop/share/hadoop/yarn:/usr/local/hadoop/share/hadoop/yarn/lib/*:/usr/local/hadoop/share/hadoop/yarn/*'
+#export SPARK_DIST_CLASSPATH_ARG='/usr/local/hadoop/etc/hadoop:/usr/local/hadoop/share/hadoop/common/lib/*:/usr/local/hadoop/share/hadoop/common/*:/usr/local/hadoop/share/hadoop/hdfs:/usr/local/hadoop/share/hadoop/hdfs/lib/*:/usr/local/hadoop/share/hadoop/hdfs/*:/usr/local/hadoop/share/hadoop/mapreduce/lib/*:/usr/local/hadoop/share/hadoop/mapreduce/*:/usr/local/hadoop/share/hadoop/yarn:/usr/local/hadoop/share/hadoop/yarn/lib/*:/usr/local/hadoop/share/hadoop/yarn/*'
 build () {
     local mod=$1
     if [ -z "$mod" ]; then
@@ -38,7 +41,7 @@ build () {
         echo "Version file .ver not found."
         echo "Please check for or re-create bin/.ver"
     fi
-    prep
+    prep $mod
     docker build --no-cache $mod \
            --build-arg SPARK_DIST_CLASSPATH_ARG=$SPARK_DIST_CLASSPATH_ARG \
 	   --file $mod/Dockerfile \

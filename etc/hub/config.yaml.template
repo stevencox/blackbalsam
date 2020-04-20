@@ -39,7 +39,7 @@ singleuser:
     # A docker container with a number of kernels, connectivity to Spark, Minio, etc.
 #    name: "heliumdatastage/all-spark-notebook"
     name: "renciorg/blackbalsam-jupyter"
-    tag: "0.0.3"
+    tag: "0.0.4"
 
 hub:
   baseUrl: /blackbalsam/

@@ -12,7 +12,12 @@ export HADOOP_VERSION=3.1.3
 export SPARK_HOME=$PWD/spark-${SPARK_VERSION}-bin-without-hadoop
 export HADOOP_HOME=$PWD/hadoop-${HADOOP_VERSION}
 export APP_HOME=${APP_HOME:-$PWD}
-export SPARK_DIST_CLASSPATH_ARG='/usr/local/hadoop/etc/hadoop:/usr/local/hadoop/share/hadoop/common/lib/*:/usr/local/hadoop/share/hadoop/common/*:/usr/local/hadoop/share/hadoop/hdfs:/usr/local/hadoop/share/hadoop/hdfs/lib/*:/usr/local/hadoop/share/hadoop/hdfs/*:/usr/local/hadoop/share/hadoop/mapreduce/lib/*:/usr/local/hadoop/share/hadoop/mapreduce/*:/usr/local/hadoop/share/hadoop/yarn:/usr/local/hadoop/share/hadoop/yarn/lib/*:/usr/local/hadoop/share/hadoop/yarn/*'
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+APP_HOME=$( dirname $DIR )
+echo $APP_HOME
+
+#export SPARK_DIST_CLASSPATH_ARG='/usr/local/hadoop/etc/hadoop:/usr/local/hadoop/share/hadoop/common/lib/*:/usr/local/hadoop/share/hadoop/common/*:/usr/local/hadoop/share/hadoop/hdfs:/usr/local/hadoop/share/hadoop/hdfs/lib/*:/usr/local/hadoop/share/hadoop/hdfs/*:/usr/local/hadoop/share/hadoop/mapreduce/lib/*:/usr/local/hadoop/share/hadoop/mapreduce/*:/usr/local/hadoop/share/hadoop/yarn:/usr/local/hadoop/share/hadoop/yarn/lib/*:/usr/local/hadoop/share/hadoop/yarn/*'
 
 ######################################################################
 ##
@@ -51,8 +56,8 @@ build-images () {
             -r renciorg \
             -t $SPARK_PY_VERSION \
             -b spark \
-            -b SPARK_DIST_CLASSPATH_ARG \
             -p $APP_HOME/spark/Dockerfile.pyspark $op
+#            -b SPARK_DIST_CLASSPATH_ARG \
     done
 }
 build () {

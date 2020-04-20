@@ -1,39 +1,42 @@
 # Copyright (c) Renaissance Computing Institute.
 # Distributed under the terms of the MIT License.
 ARG BASE_CONTAINER=jupyter/scipy-notebook
-FROM $BASE_CONTAINER
+FROM $BASE_CONTAINER as base
+FROM renciorg/blackbalsam-executor as executor
 
 LABEL maintainer="RENCI <info@renci.org>"
 
 USER root
 
-# Spark dependencies
-ENV SPARK_VERSION=2.4.5 \
-    HADOOP_VERSION=3.1.3 \
-    INSTALL_DIR=/usr/local
-
 # Install Java JDK
 RUN apt-get -y update && \
     apt-get install --no-install-recommends -y openjdk-8-jre-headless ca-certificates-java && \
-    rm -rf /var/lib/apt/lists/*
+	rm -rf /var/lib/apt/lists/*
 
-# Install and lnk Spark & Hadoop
-WORKDIR /opt
-COPY ./spark-${SPARK_VERSION}-bin-without-hadoop spark
-COPY ./hadoop-${HADOOP_VERSION} hadoop
-RUN ln -s $PWD/spark $INSTALL_DIR/spark && \
-        ln -s $PWD/hadoop $INSTALL_DIR/hadoop
+# Spark dependencies
+ENV SPARK_VERSION=2.4.5 \
+    HADOOP_VERSION=3.1.3 \
+	INSTALL_DIR=/usr/local
+
+# Copy Spark/Hadoop configuration.
+COPY --from=executor /opt/spark /opt/spark
+COPY --from=executor /usr/local/spark /usr/local/spark
+COPY --from=executor /opt/hadoop /opt/hadoop
+COPY --from=executor /usr/local/spark /usr/local/spark
 
 # Set Spark related environment variables.
-ARG SPARK_DIST_CLASSPATH_ARG=
-ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
-ENV SPARK_HOME=$INSTALL_DIR/spark
-ENV PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.7-src.zip \
-    SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info"
-ENV HADOOP_HOME=$INSTALL_DIR/hadoop
-ENV PATH=$PATH:$HADOOP_HOME/bin:$SPARK_HOME/bin
-ENV LD_LIBRARY_PATH=$HADOOP_HOME/lib/native
-ENV SPARK_DIST_CLASSPATH=$SPARK_DIST_CLASSPATH_ARG
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 \
+	SPARK_HOME=$INSTALL_DIR/spark
+	PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.7-src.zip \
+	SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info" \
+	HADOOP_HOME=$INSTALL_DIR/hadoop \
+	PATH=$PATH:$HADOOP_HOME/bin:$SPARK_HOME/bin \
+	LD_LIBRARY_PATH=$HADOOP_HOME/lib/native \
+	SPARK_DIST_CLASSPATH=/usr/local/hadoop/etc/hadoop:/usr/local/hadoop/share/hadoop/common/lib/*:/usr/local/hadoop/share/hadoop/common/*:/usr/local/hadoop/share/hadoop/hdfs:/usr/local/hadoop/share/hadoop/hdfs/lib/*:/usr/local/hadoop/share/hadoop/hdfs/*:/usr/local/hadoop/share/hadoop/mapreduce/lib/*:/usr/local/hadoop/share/hadoop/mapreduce/*:/usr/local/hadoop/share/hadoop/yarn:/usr/local/hadoop/share/hadoop/yarn/lib/*:/usr/local/hadoop/share/hadoop/yarn/* \
+	SPARK_CLASSPATH=$INSTALL_DIR/spark/jars/*:$SPARK_DIST_CLASSPATH
+
+WORKDIR $SPARK_HOME/work-dir
+RUN chmod g+w $SPARK_HOME/work-dir
 
 # Configure a Python 3.7 Kernel
 #   Provide visualization with leaflet, seaborn
@@ -64,5 +67,7 @@ RUN cd $HOME && git clone https://github.com/stevencox/blackbalsam.git $HOME/bla
 
 # Set the Python path.
 ENV PYTHONPATH=$PYTHONPATH:$HOME/blackbalsam:/home/shared/blackbalsam
+
+ENTRYPOINT [ "/opt/entrypoint.sh" ]
 
 # using spark packages: https://gist.github.com/parente/c95fdaba5a9a066efaab

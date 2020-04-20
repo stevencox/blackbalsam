@@ -119,7 +119,6 @@ hub () {
 	echo check for persistent volume claim...
 	set +e
 	pvc_exists=$(kubectl --namespace=$NAMESPACE get pvc | grep -c jhub-nfs-pvc)
-	echo $pvc_exists
 	if [ "$pvc_exists" == 0 ]; then
 	    echo install persistent volume claim...
 	    kubectl --namespace=$NAMESPACE apply -f $ETC/pvc/
@@ -163,12 +162,12 @@ hub () {
 #############################################################
 proxy () {
     up () {
-	echo installing ambassador
+	echo installing ambassador...
         helm repo add datawire https://www.getambassador.io
         helm install --name ambassador --namespace $NAMESPACE --set service.loadBalancerIP=$public_ip datawire/ambassador 
     }
     down () {
-	echo uninstalling ambassador
+	echo uninstalling ambassador...
         if [[ "$(helm ls | grep -v NAME | grep -c ambassador)" == 1 ]]; then
             helm delete ambassador --purge
         fi
@@ -178,10 +177,12 @@ proxy () {
         done
     }
     dashboard () {
+	wget --timestamping --quiet https://metriton.datawire.io/downloads/darwin/edgectl
+	chmod +x edgectl
         endpoint_ip=$(kubectl \
                           get svc -n $NAMESPACE \
                           -o=jsonpath="{.items[?(@.metadata.name=='ambassador')].status.loadBalancer.ingress[0].ip}")
-        edgectl login --namespace=$NAMESPACE $endpoint_ip
+        ./edgectl login --namespace=$NAMESPACE $endpoint_ip
     }
     $*
 }
@@ -192,20 +193,22 @@ proxy () {
 #############################################################
 minio () {
     up () {
-	echo installing minio
+	echo installing minio...
         if [ "$(helm list | grep -c minio)" == 1 ]; then
             echo == WARNING ==: A minio release is already installed.
         else
             helm install \
-                 --set accessKey=minio \
-                 --set secretKey=minio123 \
+                 --set accessKey=$minio_access_key \
+                 --set secretKey=$minio_secret_key \
+		 --set persistence.existingClaim=blackbalsam-jhub-nfs-pvc \
+		 --set persistence.subPath=minio \
                  --name minio \
                  --namespace $NAMESPACE \
                  stable/minio
         fi
     }
     down () {
-	echo uninstalling minio
+	echo uninstalling minio...
         if [[ "$(helm ls | grep -v NAME | awk '{ print $1 }' | grep -c minio)" == 1 ]]; then
             helm delete --purge minio
         fi
@@ -219,15 +222,15 @@ minio () {
 #############################################################
 alluxio () {
     up () {
-	echo installing alluxio
+	echo installing alluxio...
         echo "Configuring and starting alluxio..."
         export ALLUXIO_MASTER_HOST=alluxio-master-0
         export ALLUXIO_WORKER_HOST=alluxio-worker
         export MINIO_BUCKET=covid-19
         export MINIO_HOST=minio
         export MINIO_PORT=9000
-        export MINIO_ACCESS_KEY=minio
-        export MINIO_SECRET_KEY=minio123
+        export MINIO_ACCESS_KEY=$minio_access_key
+        export MINIO_SECRET_KEY=$minio_secret_key
         export alluxio_conf="alluxio-k8s/singleMaster-localJournal/alluxio-configmap.yaml"
         envsubst < ${alluxio_conf}.template > $alluxio_conf
         echo "  configured. creating kubernetes artifacts."
@@ -258,14 +261,14 @@ alluxio () {
 SYSTEMS="minio alluxio spark proxy hub"
 SYSTEMS="minio spark proxy hub"
 up () {
-    echo installing blackbalsam
+    echo installing blackbalsam...
     for system in $SYSTEMS; do
 	echo "  --installing $system"
         $system up
     done
 }
 down () {
-    echo uninstalling blackbalsam
+    echo uninstalling blackbalsam...
     reversed="$(echo $SYSTEMS | awk '{ for (i=NF; i>1; i--) printf("%s ",$i); print $1; }')"
     for system in $reversed; do
         $system down
@@ -274,9 +277,9 @@ down () {
 }
 restart () {
     echo "restarting blackbalsam"
-    echo "   bringing the system down."
+    echo "   bringing the system down..."
     down
-    echo "   bringing the system up."
+    echo "   bringing the system up..."
     up
 }
 status () {
@@ -311,7 +314,7 @@ init () {
 	echo tiller already installed. continuing...
 	return 
     fi
-    echo installing tiller
+    echo installing tiller...
     mkdir -p $DIST
 
     wget --timestamping --quiet --directory-prefix=$DIST $helm_url
