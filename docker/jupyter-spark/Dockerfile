@@ -8,11 +8,33 @@ LABEL maintainer="RENCI <info@renci.org>"
 
 USER root
 
+ENV TINI_VERSION v0.19.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /bin/tini
+RUN set -ex && \
+	apt-get update && \
+	ln -s /lib /lib64 && \
+	apt-get install -y bash libc6 libpam-modules libnss3 wget python3 python3-pip && \
+	chmod +x /bin/tini && \
+#	apt-get install -y bash tini libc6 libpam-modules libnss3 wget python3 python3-pip && \
+#	mkdir -p /opt/hadoop && \
+#	mkdir -p /opt/spark && \
+#	mkdir -p /opt/spark/examples && \
+#	mkdir -p /opt/spark/work-dir && \
+#	touch /opt/spark/RELEASE && \
+	rm /bin/sh && \
+	ln -sv /bin/bash /bin/sh && \
+	ln -sv /usr/bin/tini /sbin/tini && \
+	echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
+	chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
+#	ln -sv /usr/bin/python3 /usr/bin/python && \
+	ln -sv /usr/bin/pip3 /usr/bin/pip \
+	rm -rf /var/cache/apt/*
+
 # Install Java JDK
 RUN apt-get -y update && \
 	apt-get install --no-install-recommends -y openjdk-8-jre-headless ca-certificates-java wget && \
 	rm -rf /var/lib/apt/lists/* && \
-	wget --quiet https://dl.min.io/client/mc/release/linux-amd64/mc -O $INSTALL_DIR/bin/mc && \
+	wget --no-verbose https://dl.min.io/client/mc/release/linux-amd64/mc -O $INSTALL_DIR/bin/mc && \
 	chmod +x $INSTALL_DIR/bin/mc
 
 # Configure Spark
@@ -32,7 +54,8 @@ ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 \
 	PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.7-src.zip \
 	SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info" \
 	HADOOP_HOME=$INSTALL_DIR/hadoop \
-	PATH=$PATH:$HADOOP_HOME/bin:$SPARK_HOME/bin \
+	PATH=$PATH:$HADOOP_HOME/bin \
+	PATH=$PATH:$SPARK_HOME/bin \
 	LD_LIBRARY_PATH=$HADOOP_HOME/lib/native \
 	SPARK_DIST_CLASSPATH=/usr/local/hadoop/etc/hadoop:/usr/local/hadoop/share/hadoop/common/lib/*:/usr/local/hadoop/share/hadoop/common/*:/usr/local/hadoop/share/hadoop/hdfs:/usr/local/hadoop/share/hadoop/hdfs/lib/*:/usr/local/hadoop/share/hadoop/hdfs/*:/usr/local/hadoop/share/hadoop/mapreduce/lib/*:/usr/local/hadoop/share/hadoop/mapreduce/*:/usr/local/hadoop/share/hadoop/yarn:/usr/local/hadoop/share/hadoop/yarn/lib/*:/usr/local/hadoop/share/hadoop/yarn/* \
 	SPARK_CLASSPATH=$INSTALL_DIR/spark/jars/*:$SPARK_DIST_CLASSPATH
@@ -66,6 +89,6 @@ RUN cd $HOME && git clone https://github.com/stevencox/blackbalsam.git $HOME/bla
 # Set the Python path.
 ENV PYTHONPATH=$PYTHONPATH:$HOME/blackbalsam:/home/shared/blackbalsam
 
-ENTRYPOINT [ "/opt/entrypoint.sh" ]
+#ENTRYPOINT [ "/opt/entrypoint.sh" ]
 
 # using spark packages: https://gist.github.com/parente/c95fdaba5a9a066efaab

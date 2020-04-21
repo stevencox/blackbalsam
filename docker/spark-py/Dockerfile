@@ -26,9 +26,9 @@ ENV SPARK_VERSION=2.4.5 \
 	INSTALL_DIR=/usr/local
 
 # Get Spark and Hadoop binaries. Unpack, clean up, and create symbolic links.
-RUN wget --quiet https://stars.renci.org/var/lib/spark-${SPARK_VERSION}-bin-without-hadoop.tgz && \
+RUN wget --no-verbose https://stars.renci.org/var/lib/spark-${SPARK_VERSION}-bin-without-hadoop.tgz && \
 	tar xzf spark-${SPARK_VERSION}-bin-without-hadoop.tgz && \
-	wget --quiet https://stars.renci.org/var/lib/hadoop-3.1.3.tar.gz && \
+	wget --no-verbose https://stars.renci.org/var/lib/hadoop-3.1.3.tar.gz && \
 	tar xzf hadoop-${HADOOP_VERSION}.tar.gz && \
 	rm -rf hadoop-${HADOOP_VERSION}/shared/doc && \
 	ln -s $PWD/spark-${SPARK_VERSION}-bin-without-hadoop $INSTALL_DIR/spark && \
@@ -47,31 +47,31 @@ ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 \
 
 # Overlay required dependencies required by Hadoop and Minio.
 WORKDIR $SPARK_HOME/jars
-RUN wget --quiet https://stars.renci.org/var/lib/joda-time-2.9.9.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/httpclient-4.5.3.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/aws-java-sdk-s3-1.11.534.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/aws-java-sdk-kms-1.11.534.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/aws-java-sdk-dynamodb-1.11.534.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/aws-java-sdk-core-1.11.534.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/aws-java-sdk-1.11.534.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/hadoop-aws-3.1.2.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/slf4j-api-1.7.29.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/slf4j-log4j12-1.7.29.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/commons-logging-1.1.3.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/commons-pool-1.5.4.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/commons-beanutils-1.9.3.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/commons-cli-1.2.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/commons-collections-3.2.2.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/commons-configuration-1.6.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/commons-dbcp-1.4.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/commons-digester-1.8.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/commons-httpclient-3.1.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/commons-io-2.4.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/log4j-1.2.17.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/apache-log4j-extras-1.2.17.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/kubernetes-client-4.6.4.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/kubernetes-model-4.6.4.jar \
-	&& wget --quiet https://stars.renci.org/var/lib/kubernetes-model-common-4.6.4.jar
+RUN wget --no-verbose https://stars.renci.org/var/lib/joda-time-2.9.9.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/httpclient-4.5.3.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/aws-java-sdk-s3-1.11.534.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/aws-java-sdk-kms-1.11.534.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/aws-java-sdk-dynamodb-1.11.534.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/aws-java-sdk-core-1.11.534.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/aws-java-sdk-1.11.534.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/hadoop-aws-3.1.2.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/slf4j-api-1.7.29.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/slf4j-log4j12-1.7.29.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/commons-logging-1.1.3.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/commons-pool-1.5.4.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/commons-beanutils-1.9.3.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/commons-cli-1.2.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/commons-collections-3.2.2.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/commons-configuration-1.6.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/commons-dbcp-1.4.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/commons-digester-1.8.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/commons-httpclient-3.1.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/commons-io-2.4.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/log4j-1.2.17.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/apache-log4j-extras-1.2.17.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/kubernetes-client-4.6.4.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/kubernetes-model-4.6.4.jar \
+	&& wget --no-verbose https://stars.renci.org/var/lib/kubernetes-model-common-4.6.4.jar
 
 WORKDIR $SPARK_HOME/work-dir
 RUN chmod g+w $SPARK_HOME/work-dir
