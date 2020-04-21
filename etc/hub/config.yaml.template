@@ -38,7 +38,7 @@ singleuser:
   image:
     # A docker container with a number of kernels, connectivity to Spark, Minio, etc.
 #    name: "heliumdatastage/all-spark-notebook"
-    name: "renciorg/blackbalsam-jupyter"
+    name: "blackbalsam/jupyter-spark"
     tag: "0.0.4"
 
 hub:
