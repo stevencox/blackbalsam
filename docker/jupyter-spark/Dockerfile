@@ -69,7 +69,17 @@ RUN conda install nb_conda_kernels ipykernel && \
 	python -m pip install ipyleaflet seaborn minio==5.0.6 \
 	requests==2.22.0 neo4jrestclient==2.1.1 elasticsearch==7.5.1 pandas \
 	notedown plotly seaborn matplotlib bokeh xlrd yellowbrick \
-	scikit-image s3contents
+	scikit-image s3contents py4j \
+	&& mkdir -p /home/public && chmod 777 /home/public \
+	&& ln -s /opt/spark/python/pyspark /usr/local/lib/python3.7/dist-packages/pyspark \
+ 	&& ln -s /opt/spark/python/pylintrc /usr/local/lib/python3.7/dist-packages/pylintrc
+
+# Install Jupyter Spark extension
+RUN pip install jupyter-spark \
+	&& jupyter serverextension enable --py jupyter_spark \
+	&& jupyter nbextension install --py jupyter_spark \
+	&& jupyter nbextension enable --py jupyter_spark \
+	&& jupyter nbextension enable --py widgetsnbextension
 
 # Install AI toolkit (Tensorflow, Keras, Gensim, PyTorch, sklearn, numpy, OpenKE)
 #RUN pip install --upgrade tensorflow keras gensim sklearn numpy torch
