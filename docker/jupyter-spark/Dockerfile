@@ -71,11 +71,10 @@ RUN conda install nb_conda_kernels ipykernel && \
 	notedown plotly seaborn matplotlib bokeh xlrd yellowbrick \
 	scikit-image s3contents
 
-RUN pip install py4j
+RUN pip install py4j pyspark
 RUN	mkdir -p /home/public && chmod 777 /home/public
-
-RUN	ln -s /opt/spark-${SPARK_VERSION}-bin-without-hadoop/python/pyspark /usr/local/lib/python3.7/dist-packages/pyspark \
- 	&& ln -s /opt/spark-${SPARK_VERSION}-bin-without-hadoop/python/pylintrc /usr/local/lib/python3.7/dist-packages/pylintrc
+#RUN	ln -s /opt/spark-${SPARK_VERSION}-bin-without-hadoop/python/pyspark /usr/local/lib/python3.7/dist-packages/pyspark \
+# 	&& ln -s /opt/spark-${SPARK_VERSION}-bin-without-hadoop/python/pylintrc /usr/local/lib/python3.7/dist-packages/pylintrc
 
 # Install Jupyter Spark extension
 RUN pip install jupyter-spark \
