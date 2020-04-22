@@ -67,21 +67,19 @@ ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 \
 RUN conda install nb_conda_kernels ipykernel && \
 	python -m IPython kernel install --prefix=/usr/local --name "Python3.7" && \
 	python -m pip install ipyleaflet seaborn minio==5.0.6 \
-	requests==2.22.0 neo4jrestclient==2.1.1 elasticsearch==7.5.1 pandas \
+	requests==2.22.0 neo4jrestclient==2.1.1 elasticsearch==7.5.1 \
+	py4j==0.10.7 pyspark==2.4.5 pandas \
 	notedown plotly seaborn matplotlib bokeh xlrd yellowbrick \
-	scikit-image s3contents
-
-RUN pip install py4j pyspark
-RUN	mkdir -p /home/public && chmod 777 /home/public
-#RUN	ln -s /opt/spark-${SPARK_VERSION}-bin-without-hadoop/python/pyspark /usr/local/lib/python3.7/dist-packages/pyspark \
-# 	&& ln -s /opt/spark-${SPARK_VERSION}-bin-without-hadoop/python/pylintrc /usr/local/lib/python3.7/dist-packages/pylintrc
+	scikit-image s3contents \
+	mkdir -p /home/public && chmod 777 /home/public
 
 # Install Jupyter Spark extension
 RUN pip install jupyter-spark \
 	&& jupyter serverextension enable --py jupyter_spark \
 	&& jupyter nbextension install --py jupyter_spark \
 	&& jupyter nbextension enable --py jupyter_spark \
-	&& jupyter nbextension enable --py widgetsnbextension
+	&& jupyter nbextension enable --py widgetsnbextension \
+	&& pip install nbconvert==5.3.1 tornado==5.0
 
 # Install AI toolkit (Tensorflow, Keras, Gensim, PyTorch, sklearn, numpy, OpenKE)
 #RUN pip install --upgrade tensorflow keras gensim sklearn numpy torch
