@@ -66,7 +66,7 @@ ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 \
 #   Minio needs to be at 5.0.6 for Python 3.7
 RUN conda install nb_conda_kernels ipykernel && \
 	python -m IPython kernel install --prefix=/usr/local --name "Python3.7" && \
-	python -m pip install ipyleaflet seaborn minio==5.0.6 \
+	pip install ipyleaflet seaborn minio==5.0.6 \
 	requests==2.22.0 neo4jrestclient==2.1.1 elasticsearch==7.5.1 \
 	py4j==0.10.7 pyspark==2.4.5 pandas \
 	notedown plotly seaborn matplotlib bokeh xlrd yellowbrick \
