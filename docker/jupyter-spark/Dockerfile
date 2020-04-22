@@ -69,9 +69,12 @@ RUN conda install nb_conda_kernels ipykernel && \
 	python -m pip install ipyleaflet seaborn minio==5.0.6 \
 	requests==2.22.0 neo4jrestclient==2.1.1 elasticsearch==7.5.1 pandas \
 	notedown plotly seaborn matplotlib bokeh xlrd yellowbrick \
-	scikit-image s3contents py4j \
-	&& mkdir -p /home/public && chmod 777 /home/public \
-	&& ln -s /opt/spark-${SPARK_VERSION}-bin-without-hadoop/python/pyspark /usr/local/lib/python3.7/dist-packages/pyspark \
+	scikit-image s3contents
+
+RUN pip install py4j
+RUN	mkdir -p /home/public && chmod 777 /home/public
+
+RUN	ln -s /opt/spark-${SPARK_VERSION}-bin-without-hadoop/python/pyspark /usr/local/lib/python3.7/dist-packages/pyspark \
  	&& ln -s /opt/spark-${SPARK_VERSION}-bin-without-hadoop/python/pylintrc /usr/local/lib/python3.7/dist-packages/pylintrc
 
 # Install Jupyter Spark extension
