@@ -70,7 +70,7 @@ RUN conda install nb_conda_kernels ipykernel && \
 	requests==2.22.0 neo4jrestclient==2.1.1 elasticsearch==7.5.1 \
 	py4j==0.10.7 pyspark==2.4.5 pandas \
 	notedown plotly seaborn matplotlib bokeh xlrd yellowbrick \
-	scikit-image s3contents \
+	scikit-image s3contents && \
 	mkdir -p /home/public && chmod 777 /home/public
 
 # Install Jupyter Spark extension
