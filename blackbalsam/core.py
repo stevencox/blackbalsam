@@ -148,7 +148,7 @@ class Blackbalsam:
                self.shared_storage_path,
             # Docker Image and Python 
             "spark.kubernetes.pyspark.pythonVersion" : "3",
-            "spark.kubernetes.container.image" : "blackbalsam/jupyter-spark:0.0.6", 
+            "spark.kubernetes.container.image" : "blackbalsam/jupyter-spark:0.0.9", 
             # Security & RBAC
             "spark.kubernetes.authenticate.serviceAccountName": "spark",
             # S3 / AWS / Minio
