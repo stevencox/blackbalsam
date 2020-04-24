@@ -1,14 +1,17 @@
+#
 # Copyright (c) Renaissance Computing Institute.
 # Distributed under the terms of the MIT License.
-
+#
 ARG BASE_CONTAINER=openjdk:8-jdk-slim
 FROM $BASE_CONTAINER
 
 LABEL maintainer="RENCI <info@renci.org>"
 
+# Be root to administer the system core.
 USER root
 ENV INSTALL_DIR=/usr/local
 
+# Least privilege: create a non root user.
 ENV USER spark
 ENV HOME /home/$USER
 WORKDIR $HOME
@@ -29,16 +32,11 @@ ENV SPARK_VERSION=2.4.5 \
 ENV TINI_VERSION v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /usr/bin/tini
 RUN set -ex && \
+# Install OS level libraries and tools.
 	apt-get update && \
 	ln -s /lib /lib64 && \
 	apt-get install -y bash libc6 libpam-modules libnss3 wget python3 python3-pip && \
 	chmod +x /usr/bin/tini && \
-#	apt-get install -y bash tini libc6 libpam-modules libnss3 wget python3 python3-pip && \
-#	mkdir -p /opt/hadoop && \
-#	mkdir -p /opt/spark && \
-#	mkdir -p /opt/spark/examples && \
-#	mkdir -p /opt/spark/work-dir && \
-#	touch /opt/spark/RELEASE && \
 	rm /bin/sh && \
 	ln -sv /bin/bash /bin/sh && \
 	ln -sv /usr/bin/tini /sbin/tini && \
@@ -46,26 +44,31 @@ RUN set -ex && \
 	chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
 	ln -sv /usr/bin/pip3 /usr/bin/pip && \
 	rm -rf /var/cache/apt/* && \
+# Install Spark and Hadoop packages, cleaning up archives at each phase.
 	wget --no-verbose https://stars.renci.org/var/lib/spark-${SPARK_VERSION}-bin-without-hadoop.tgz && \
 	tar xzf spark-${SPARK_VERSION}-bin-without-hadoop.tgz && \
+	rm spark-${SPARK_VERSION}-bin-without-hadoop.tgz && \
 	wget --no-verbose https://stars.renci.org/var/lib/hadoop-${HADOOP_VERSION}.tar.gz && \
 	tar xzf hadoop-${HADOOP_VERSION}.tar.gz && \
+	rm hadoop-${HADOOP_VERSION}.tar.gz && \
 	rm -rf hadoop-${HADOOP_VERSION}/shared/doc && \
+# Link these to the install dir.
 	ln -s $PWD/spark-${SPARK_VERSION}-bin-without-hadoop $INSTALL_DIR/spark && \
 	ln -s $PWD/hadoop-${HADOOP_VERSION} $INSTALL_DIR/hadoop && \
-	cp $INSTALL_DIR/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt/ && \
-	ls -lisa /opt
+# Copy the entrypoint file to /opt
+	cp $INSTALL_DIR/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt/
 
 # Set Spark related environment variables. Bind our custom hadoop version.
-ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 \
+ENV JAVA_HOME=/usr/local/openjdk-8 \
 	SPARK_HOME=$INSTALL_DIR/spark \
 	PYTHONPATH=$SPARK_HOME/python:$SPARK_HOME/python/lib/py4j-0.10.7-src.zip \
 	SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info" \
 	HADOOP_HOME=$INSTALL_DIR/hadoop \
 	PATH=$PATH:$HADOOP_HOME/bin:$SPARK_HOME/bin \
 	LD_LIBRARY_PATH=$HADOOP_HOME/lib/native \
-	SPARK_DIST_CLASSPATH=/usr/local/hadoop/etc/hadoop:/usr/local/hadoop/share/hadoop/common/lib/*:/usr/local/hadoop/share/hadoop/common/*:/usr/local/hadoop/share/hadoop/hdfs:/usr/local/hadoop/share/hadoop/hdfs/lib/*:/usr/local/hadoop/share/hadoop/hdfs/*:/usr/local/hadoop/share/hadoop/mapreduce/lib/*:/usr/local/hadoop/share/hadoop/mapreduce/*:/usr/local/hadoop/share/hadoop/yarn:/usr/local/hadoop/share/hadoop/yarn/lib/*:/usr/local/hadoop/share/hadoop/yarn/* \
-	SPARK_CLASSPATH=$INSTALL_DIR/spark/jars/*:$SPARK_DIST_CLASSPATH
+	SPARK_DIST_CLASSPATH=/usr/local/hadoop/etc/hadoop:/usr/local/hadoop/share/hadoop/common/lib/*:/usr/local/hadoop/share/hadoop/common/*:/usr/local/hadoop/share/hadoop/hdfs:/usr/local/hadoop/share/hadoop/hdfs/lib/*:/usr/local/hadoop/share/hadoop/hdfs/*:/usr/local/hadoop/share/hadoop/mapreduce/lib/*:/usr/local/hadoop/share/hadoop/mapreduce/*:/usr/local/hadoop/share/hadoop/yarn:/usr/local/hadoop/share/hadoop/yarn/lib/*:/usr/local/hadoop/share/hadoop/yarn/*
+ENV SPARK_CLASSPATH=$INSTALL_DIR/spark/jars/*:$SPARK_DIST_CLASSPATH
+#	/usr/local/hadoop/etc/hadoop:/usr/local/hadoop/share/hadoop/common/lib/*:/usr/local/hadoop/share/hadoop/common/*:/usr/local/hadoop/share/hadoop/hdfs:/usr/local/hadoop/share/hadoop/hdfs/lib/*:/usr/local/hadoop/share/hadoop/hdfs/*:/usr/local/hadoop/share/hadoop/mapreduce/lib/*:/usr/local/hadoop/share/hadoop/mapreduce/*:/usr/local/hadoop/share/hadoop/yarn:/usr/local/hadoop/share/hadoop/yarn/lib/*:/usr/local/hadoop/share/hadoop/yarn/*
 
 # Overlay required dependencies required by Hadoop and Minio.
 WORKDIR $SPARK_HOME/jars

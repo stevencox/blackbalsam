@@ -1,18 +1,23 @@
 #!/bin/bash
 
 # https://gist.github.com/yuanying/3aa7d59dcce65470804ab43def646ab6
- 
+
+set -e #x
+
 IMAGE="gcr.io/google-containers/ubuntu-slim:0.14"
 COMMAND="/bin/bash"
 NAMESPACE="default"
 SUFFIX=$(date +%s | shasum | base64 | fold -w 10 | head -1 | tr '[:upper:]' '[:lower:]')
+RECONNECT=
+DELETE=
+LIST=
 
 usage_exit() {
     echo "Usage: $0 [-c command] [-i image] PVC ..." 1>&2
     exit 1
 }
 
-while getopts i:h:n: OPT
+while getopts i:h:n:c:rdl OPT
 do
     case $OPT in
         i)  IMAGE=$OPTARG
@@ -21,6 +26,12 @@ do
             ;;
         n)  NAMESPACE=$OPTARG
             ;;
+	r)  RECONNECT=True
+	    ;;
+	d)  DELETE=True
+	    ;;
+	l)  LIST=True
+	    ;;
         h)  usage_exit
             ;;
         \?) usage_exit
@@ -28,6 +39,31 @@ do
     esac
 done
 shift $(($OPTIND - 1))
+
+if [ ! -z "$LIST" ]; then
+    kubectl --namespace=$NAMESPACE get pods -o=jsonpath="{.items[*].metadata.name}" | tr " " "\n" | grep pvc-mounter
+    exit 0
+fi
+    
+if [ ! -z "$DELETE" ]; then
+    for pod in $(kubectl --namespace=$NAMESPACE get pods -o=jsonpath="{.items[*].metadata.name}"); do
+	if [ "$(echo $pod | grep -c pvc-mounter)" == 1 ]; then
+	    kubectl --namespace=$NAMESPACE delete pod $pod
+	fi
+    done
+    exit 0
+fi
+
+if [ ! -z "$RECONNECT" ]; then
+    echo Reconnect to an existing pvc mounter pod.
+    for pod in $(kubectl --namespace=$NAMESPACE get pods -o=jsonpath="{.items[*].metadata.name}"); do
+	if [ "$(echo $pod | grep -c pvc-mounter)" == 1 ]; then
+	    kubectl --namespace=$NAMESPACE exec -it $pod -- /bin/bash
+	    exit 0
+ 	fi
+    done
+    echo No existing pod found. Connecting a new pvc-mounter.
+fi
 
 VOL_MOUNTS=""
 VOLS=""
