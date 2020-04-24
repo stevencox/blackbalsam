@@ -26,13 +26,35 @@ ENV SPARK_VERSION=2.4.5 \
 	INSTALL_DIR=/usr/local
 
 # Get Spark and Hadoop binaries. Unpack, clean up, and create symbolic links.
-RUN wget --no-verbose https://stars.renci.org/var/lib/spark-${SPARK_VERSION}-bin-without-hadoop.tgz && \
+ENV TINI_VERSION v0.19.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /usr/bin/tini
+RUN set -ex && \
+	apt-get update && \
+	ln -s /lib /lib64 && \
+	apt-get install -y bash libc6 libpam-modules libnss3 wget python3 python3-pip && \
+	chmod +x /usr/bin/tini && \
+#	apt-get install -y bash tini libc6 libpam-modules libnss3 wget python3 python3-pip && \
+#	mkdir -p /opt/hadoop && \
+#	mkdir -p /opt/spark && \
+#	mkdir -p /opt/spark/examples && \
+#	mkdir -p /opt/spark/work-dir && \
+#	touch /opt/spark/RELEASE && \
+	rm /bin/sh && \
+	ln -sv /bin/bash /bin/sh && \
+	ln -sv /usr/bin/tini /sbin/tini && \
+	echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
+	chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
+	ln -sv /usr/bin/pip3 /usr/bin/pip && \
+	rm -rf /var/cache/apt/* && \
+	wget --no-verbose https://stars.renci.org/var/lib/spark-${SPARK_VERSION}-bin-without-hadoop.tgz && \
 	tar xzf spark-${SPARK_VERSION}-bin-without-hadoop.tgz && \
 	wget --no-verbose https://stars.renci.org/var/lib/hadoop-${HADOOP_VERSION}.tar.gz && \
 	tar xzf hadoop-${HADOOP_VERSION}.tar.gz && \
 	rm -rf hadoop-${HADOOP_VERSION}/shared/doc && \
 	ln -s $PWD/spark-${SPARK_VERSION}-bin-without-hadoop $INSTALL_DIR/spark && \
-	ln -s $PWD/hadoop-${HADOOP_VERSION} $INSTALL_DIR/hadoop
+	ln -s $PWD/hadoop-${HADOOP_VERSION} $INSTALL_DIR/hadoop && \
+	cp $INSTALL_DIR/spark/kubernetes/dockerfiles/spark/entrypoint.sh /opt/ && \
+	ls -lisa /opt
 
 # Set Spark related environment variables. Bind our custom hadoop version.
 ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 \

@@ -32,12 +32,18 @@ singleuser:
       - name: jupyterhub-shared
         persistentVolumeClaim:
           claimName: blackbalsam-jhub-nfs-pvc
+      - name: kubernetes-cert
+        hostPath:
+          path: /etc/kubernetes/ssl/ca.crt
     extraVolumeMounts:
       - name: jupyterhub-shared
         mountPath: /home/shared
+      - name: kubernetes-cert
+        mountPath: /etc/kubernetes/ssl/ca.crt
+        readOnly: true
   image:
     name: "blackbalsam/jupyter-spark"
-    tag: "0.0.5"
+    tag: "0.0.6"
     pullPolicy: Always
 
 hub:
