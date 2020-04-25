@@ -98,6 +98,10 @@ class Storage:
 class Blackbalsam:
     
     def __init__(self, dry_run=False):
+        self.spark = None
+        self.alluxio_host_port="alluxio-master-0:19998"
+        self.shared_storage_path = "/home/shared"
+        self.dry_run = dry_run
         self.environ_config = self.get_config ()
         self.store = Storage (
             endpoint = self.environ_config.get (
@@ -108,10 +112,6 @@ class Blackbalsam:
                 "spark.hadoop.fs.s3a.secret.key", "minio123"))
             
         self.corpus = Corpus (store=self.store, dry_run=dry_run)
-        self.spark = None
-        self.alluxio_host_port="alluxio-master-0:19998"
-        self.shared_storage_path = "/home/shared"
-        self.dry_run = dry_run
         
     def get_config (self):
         config = {}
