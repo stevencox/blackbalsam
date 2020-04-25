@@ -42,6 +42,7 @@ RUN set -ex && \
 	ln -sv /usr/bin/tini /sbin/tini && \
 	echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
 	chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
+	ln -sv /usr/bin/python3 /usr/bin/python && \
 	ln -sv /usr/bin/pip3 /usr/bin/pip && \
 	rm -rf /var/cache/apt/* && \
 # Install Spark and Hadoop packages, cleaning up archives at each phase.

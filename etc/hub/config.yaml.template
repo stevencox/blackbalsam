@@ -44,7 +44,7 @@ singleuser:
   image:
     name: "blackbalsam/jupyter-spark"
     tag: "0.0.6"
-    pullPolicy: Always
+    imagePullPolicy: Always
 
 hub:
   baseUrl: /blackbalsam/
