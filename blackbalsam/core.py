@@ -75,7 +75,7 @@ class Storage:
     def make_bucket (self, bucket):
         return self.client.make_bucket(bucket)
     def list_buckets (self):
-        return client.list_buckets()
+        return self.client.list_buckets()
     def fput_object (self, bucket, source, target):
         return self.client.fput_object(bucket, source, target)
     def list_objects (self, bucket, prefix=None, recursive=False):
@@ -98,7 +98,15 @@ class Storage:
 class Blackbalsam:
     
     def __init__(self, dry_run=False):
-        self.store = Storage ()
+        self.environ_config = self.get_config ()
+        self.store = Storage (
+            endpoint = self.environ_config.get (
+                "spark.hadoop.fs.s3a.endpoint", "http://minio:9000"),
+            access_key = self.environ_config.get (
+                "spark.hadoop.fs.s3a.access.key", "minio"),
+            secret_key = self.environ_config.get (
+                "spark.hadoop.fs.s3a.secret.key", "minio123"))
+            
         self.corpus = Corpus (store=self.store, dry_run=dry_run)
         self.spark = None
         self.alluxio_host_port="alluxio-master-0:19998"
@@ -142,8 +150,6 @@ class Blackbalsam:
     4. retry s3
     """    
     def get_spark (self, conf={}):
-        self.environ_config = self.get_config ()
-
         app_name = "spark.app.name"
         assert app_name in conf, f"""
         Please provide a value for the {app_name} property identifying your application.
