@@ -22,15 +22,18 @@ class Corpus:
                  store,
                  location="/home/shared/blackbalsam",
                  urls=[
-                 "https://ai2-semanticscholar-cord-19.s3-us-west-2.amazonaws.com/2020-03-20/noncomm_use_subset.tar.gz"
-                 ]):
+                     "https://ai2-semanticscholar-cord-19.s3-us-west-2.amazonaws.com/2020-03-20/noncomm_use_subset.tar.gz"
+                 ],
+                 dry_run=False):
         bucket = "covid-19"
+        self.dry_run = dry_run
         self.store = store
         self.location = os.path.join (location, bucket)
         self.urls = urls
         self.bucket = bucket
         if not os.path.exists (self.location):
-            os.makedirs (self.location)
+            logger.error (f"Required directory {self.location} does not exist")
+            #os.makedirs (self.location)
             
         logger.info ("populating corpus...")
         for url in urls:
@@ -40,6 +43,8 @@ class Corpus:
             if os.path.exists (output_filename):
                 logger.debug (f"skipping {output_filename}. file exists.")
             else:
+                if self.dry_run:
+                    return
                 response = requests.get(url, stream=True)
                 if response.status_code == 200:
                     logger.debug (f"  --creating output file {output_filename}")
@@ -92,37 +97,61 @@ class Storage:
 
 class Blackbalsam:
     
-    def __init__(self):
+    def __init__(self, dry_run=False):
         self.store = Storage ()
-        self.corpus = Corpus (store=self.store)
+        self.corpus = Corpus (store=self.store, dry_run=dry_run)
         self.spark = None
         self.alluxio_host_port="alluxio-master-0:19998"
         self.shared_storage_path = "/home/shared"
+        self.dry_run = dry_run
         
     def get_config (self):
         config = {}
-        home_dir = os.path.expanduser("~")
-        system_path = os.path.join (home_dir, ".blackbalsam.yaml")
-        user_path = os.path.join (self.shared_storage_path,
+        home_dir = os.path.expanduser("~")        
+        user_path = os.path.join (home_dir, ".blackbalsam.yaml")
+        system_path = os.path.join (self.shared_storage_path,
                              "/blackbalsam/.blackbalsam.yaml")
+        system_path = os.path.abspath (os.path.join (
+            os.path.dirname (__file__), "..", "..",
+            "blackbalsam.yaml"))
+        logger.debug (f"user_path: {user_path}")
+        logger.debug (f"system_path: {system_path}")
         if os.path.exists (system_path):
-            config = yaml.safe_load (system_path)
+            with open(system_path, "r") as stream:
+                config = yaml.safe_load (stream)
+            logger.info (f"--loaded {system_path}")
         elif os.path.exists (user_path):
-            config = yaml.safe_load (user_path)
+            with open(user_path, "r") as stream:
+                config = yaml.safe_load (stream)
+            logger.info (f"--loaded {user_path}")
+        logger.info (f" config --> {json.dumps(config, indent=2)}")
         return config
 
+    def get_hostname (self):
+        value = None
+        try:
+            value = socket.gethostbyname(socket.gethostname())
+        except Exception as e:
+            value = socket.gethostbyname('localhost')
+        return value
+    
     """
     1. put a config at /home/shared/blackbalsam/.blackbalsam.yaml
     2. update version of the spark docker
     3. update hub helm w version of the jupyter docker
     4. retry s3
-    """
-    
+    """    
     def get_spark (self, conf={}):
-        environ_config = self.get_config ()
-        
+        self.environ_config = self.get_config ()
+
         app_name = "spark.app.name"
-        assert app_name in conf, f"Provide a value for the {app_name} property identifying your application."
+        assert app_name in conf, f"""
+        Please provide a value for the {app_name} property identifying your application.
+        Other properties of interest include:
+          "spark.executor.instances"       : "3",
+          "spark.executor.memory"          : "512M"
+        For a full list, see https://spark.apache.org/docs/latest/configuration.html#application-properties
+        """
         
         os.environ['PYSPARK_PYTHON'] = '/usr/bin/python3'
         os.environ['PYSPARK_DRIVER_PYTHON'] = '/usr/bin/python3'
@@ -132,7 +161,7 @@ class Blackbalsam:
             "spark.app.name"                 : "blackbalsam-connectivity-0",
             # Cluster Topology
             "spark.master"                   : "k8s://https://kubernetes.default:443",
-            "spark.driver.host"              : socket.gethostbyname(socket.gethostname()),
+            "spark.driver.host"              : self.get_hostname (),
             "spark.submit.deployMode"        : "client",
             "spark.driver.memory"            : "512M",
             "spark.executor.instances"       : "3",
@@ -164,9 +193,16 @@ class Blackbalsam:
             "spark.hadoop.fs.s3a.attempts.maximum"  : "3",
             "spark.hadoop.fs.s3a.connection.timeout": "10000"
         }
-        environ_config.update (default_conf)
-        environ_config.update (conf)
-        sc = SparkContext (conf=SparkConf().setAll (list (environ_config.items ())))
+#        self.environ_config.update (default_conf)
+#        self.environ_config.update (conf)
+        default_conf.update (self.environ_config)
+        default_conf.update (conf)
+        if self.dry_run:
+#            logger.info (f"config: {json.dumps(self.environ_config, indent=2)}")
+            logger.info (f"config: {json.dumps(default_conf, indent=2)}")
+            return None
+#        sc = SparkContext (conf=SparkConf().setAll (list (self.environ_config.items ())))
+        sc = SparkContext (conf=SparkConf().setAll (list (default_conf.items ())))
         global sqlContext
         sqlContext = SQLContext (sc)
         return SparkSession(sc)
