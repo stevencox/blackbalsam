@@ -48,7 +48,7 @@ Machine learning and big data workflows, like most, benefit from fast data acces
 The [CORD-19 Open Research Data Set](https://www.semanticscholar.org/cord19/download) is at `/home/shared/data/cord19`
 
 ### New York Times
-The New York Times COVID-19 GitHub data set is at `/home/shared/data/nytimes/covid-19-data`
+The [New York Times COVID-19](https://github.com/nytimes/covid-19-data) GitHub data set is at `/home/shared/data/nytimes/covid-19-data`
 
 ## Prerequisites
 
