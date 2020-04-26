@@ -44,6 +44,8 @@ Machine learning and big data workflows, like most, benefit from fast data acces
 
 ## Data 
 
+More data sets will be added soon. The ones below reference a `/home/shared` directory which is mounted to each Jupyter notebook instance.
+
 ### CORD-19 Dataset
 The [CORD-19 Open Research Data Set](https://www.semanticscholar.org/cord19/download) is at `/home/shared/data/cord19`
 
