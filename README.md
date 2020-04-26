@@ -2,11 +2,11 @@
 
 ![image](https://user-images.githubusercontent.com/306971/80292483-05426b00-8725-11ea-9ab3-0686c8a6c76a.png)
 
-Blackbalsam is an open source visualization and scalable computing environment.
-
-It provides notebook computing via a JupyterHub interface to a Spark enabled Kubernetes cluster.
+Blackbalsam is an open source visualization and scalable computing environment providing computation infrastructure with ready access to COVID-19 data sets with an emphasis on data relating to North Carolina.
 
 ## Overview
+
+Blackbalsam provides flexible notebook computing via a JupyterHub interface including the ability to dynamically create personal Spark clusters using the underlying Kubernetes infrastructure. The prototype system runs at the Renaissance Computing Institute on premise but it is cloud ready.
 
 ### Authentication
 Access is provided via GitHub and OpenID Connect (OIDC). Whitelisted users can use their GitHub identity to login and start working immediately.
