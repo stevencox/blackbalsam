@@ -101,4 +101,4 @@ Note that this is still an alpha release! If you have questions, feel free to
   3. File issues at https://github.com/jupyterhub/zero-to-jupyterhub-k8s/issues
 ```
 
-Then, go to https://<your-domain>/blackbalsam/ to get started.
+Then, go to https://{your-domain}/blackbalsam/ to get started.
