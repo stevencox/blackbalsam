@@ -8,8 +8,6 @@
 
 Blackbalsam's JupyterHub interface features a notebook environment with extensive artificial intelligence, visualization, and scalable computing capabilities built in. It also features ability to dynamically create personal Spark clusters using the underlying Kubernetes infrastructure. The prototype system runs at the [Renaissance Computing Institute](https://renci.org/) in an on premise cluster and it is cloud ready. Blackbalsam is open source under the MIT License.
 
-![image](https://user-images.githubusercontent.com/306971/80296143-80684900-8746-11ea-9ad7-e2dc69d6d71f.png)
-
 ### Authentication
 Access is provided via GitHub and OpenID Connect (OIDC). Whitelisted users can use their GitHub identity to login and start working immediately.
 
@@ -115,4 +113,5 @@ From [Wikipedia](https://en.wikipedia.org/wiki/Black_Balsam_Knob):
 * [ ] **Tools**: Incorporate additional tools and libraries by tracking user demand.
 * [ ] **Deployment Model**: Deployment needs improvements in the areas of secret management, continuous integration, testing, and tools like Helm.
 
+![image](https://user-images.githubusercontent.com/306971/80296143-80684900-8746-11ea-9ad7-e2dc69d6d71f.png)
 
