@@ -103,7 +103,7 @@ Note that this is still an alpha release! If you have questions, feel free to
 
 Then, go to https://{your-domain}/blackbalsam/ to get started.
 
-Next Steps:
+## Next Steps:
 * [ ] **AI Infrastructure**: The current cluster does not have GPUs. Also, limitations in JupyterHub wrt Kubernetes do not allow launching multiple notebook profiles in the current version structure. Research alternatives.
 * [ ] **Persistence**: Further testing and integration of Alluxion and S3 interfaces with Spark is needed.
 * [ ] **Tools**: Incorporate additional tools and libraries by tracking user demand.
