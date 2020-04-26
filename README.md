@@ -6,7 +6,7 @@ Blackbalsam is an open source visualization and scalable computing environment p
 
 ## Overview
 
-Blackbalsam provides flexible notebook computing through a JupyterHub interface featuring the ability to dynamically create personal Spark clusters using the underlying Kubernetes infrastructure. The prototype system runs at the [Renaissance Computing Institute](https://renci.org/) in an on premise cluster and it is cloud ready. The system is open source under the MIT License.
+Blackbalsam provides flexible notebook computing through a JupyterHub interface featuring the ability to dynamically create personal Spark clusters using the underlying Kubernetes infrastructure. The prototype system runs at the [Renaissance Computing Institute](https://renci.org/) in an on premise cluster and it is cloud ready. Blackbalsam is open source under the MIT License.
 
 ![image](https://user-images.githubusercontent.com/306971/80296143-80684900-8746-11ea-9ad7-e2dc69d6d71f.png)
 
@@ -101,8 +101,13 @@ Note that this is still an alpha release! If you have questions, feel free to
   2. Chat with us at https://gitter.im/jupyterhub/jupyterhub
   3. File issues at https://github.com/jupyterhub/zero-to-jupyterhub-k8s/issues
 ```
+Then, go to https://{your-domain}/blackbalsam/ to visit the application.
 
-Then, go to https://{your-domain}/blackbalsam/ to get started.
+## About
+
+From [Wikipedia](https://en.wikipedia.org/wiki/Black_Balsam_Knob):
+
+"Black Balsam Knob,[2] also known as Black Balsam Bald, is in the Pisgah National Forest southwest of Asheville, North Carolina, near milepost 420 on the Blue Ridge Parkway. It is the second highest mountain[3] in the Great Balsam Mountains. The Great Balsams are within the Blue Ridge Mountains, which are part of the Appalachian Mountains. It is the 23rd highest of the 40 mountains in North Carolina over 6000 feet.[4]"
 
 ## Next Steps:
 * [ ] **AI Infrastructure**: The current cluster does not have GPUs. Also, limitations in JupyterHub wrt Kubernetes do not allow launching multiple notebook profiles in the current version structure. Research alternatives.
