@@ -8,17 +8,17 @@ It provides notebook computing via a JupyterHub interface to a Spark enabled Kub
 
 ## Overview
 
-### Authentication:
+### Authentication
 Access is provided via GitHub and OpenID Connect (OIDC). Whitelisted users can use their GitHub identity to login and start working immediately.
 
-### Notebook computing: 
+### Notebook Computing
 JupyterHub provides the interface to the environment presenting a notebook providing Python and R kernels.
 
 ### Visualization
 The Jupyter notebook provides basic visualization via matplotlib, ploty, and seaborn. It also inludes bokeh, [yellowbrick](https://www.scikit-yb.org/en/latest/), and ipyleaflet to handle more specialized needs including machine learning and geographic visualization.
 ![image](https://user-images.githubusercontent.com/306971/80293212-91579100-872b-11ea-9fe3-d8bd00414794.png)
 
-### Compute:
+### Compute
 The Jupyter notebook is also instrumented to allow dynamically launching a customized, personal Apache Spark cluster of a user specified size through the Kubernetes API. In this figure, we see the notebook for loading the Python interface to Blackbalsam and creating a four worker Spark cluster. After creating the cluster, it uses Spark's resilient distributed dataset (RDD) interface and its functional programming paradigm to map an operator to each loaded article.
 ![image](https://user-images.githubusercontent.com/306971/80293315-60c42700-872c-11ea-8b29-6a954bc54e80.png)
 
@@ -28,7 +28,7 @@ The mechanics of configuring and launching the cluster are handled transparently
 Creating the Word2Vec model is straightforward:
 ![image](https://user-images.githubusercontent.com/306971/80293487-c664e300-872d-11ea-809f-454cdb1c395e.png)
 
-### Storage:
+### Storage
 #### NFS
 The network filesystem (NFS) is used to mount shared storage to each user notebook at /home/shared.
 
