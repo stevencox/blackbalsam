@@ -2,7 +2,7 @@
 
 ![image](https://user-images.githubusercontent.com/306971/80292483-05426b00-8725-11ea-9ab3-0686c8a6c76a.png)
 
-Blackbalsam is an open source visualization and scalable computing environment providing computation infrastructure with ready access to COVID-19 data sets with an emphasis on data relating to North Carolina.
+Blackbalsam is an open source visualization and scalable computing environment providing computation infrastructure with  access to COVID-19 data sets and an emphasis on data, analytics, and visualization relating to North Carolina.
 
 ## Overview
 
