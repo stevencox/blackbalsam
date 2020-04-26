@@ -2,11 +2,11 @@
 
 ![image](https://user-images.githubusercontent.com/306971/80292483-05426b00-8725-11ea-9ab3-0686c8a6c76a.png)
 
-[Blackbalsam](https://blackbalsam.renci.org/blackbalsam/hub/login) is an open source visualization and scalable computing environment providing access to COVID-19 data sets with an emphasis on analytics relating to North Carolina.
+[Blackbalsam](https://blackbalsam.renci.org/blackbalsam/hub/login) is an open source analytics and visualization environment providing access to COVID-19 data sets with an emphasis on analytics relating to North Carolina.
 
 ## Overview
 
-Blackbalsam provides flexible notebook computing through a JupyterHub interface featuring the ability to dynamically create personal Spark clusters using the underlying Kubernetes infrastructure. The prototype system runs at the [Renaissance Computing Institute](https://renci.org/) in an on premise cluster and it is cloud ready. Blackbalsam is open source under the MIT License.
+Blackbalsam's JupyterHub interface features a notebook environment with extensive artificial intelligence, visualization, and scalable computing capabilities built in. It also features ability to dynamically create personal Spark clusters using the underlying Kubernetes infrastructure. The prototype system runs at the [Renaissance Computing Institute](https://renci.org/) in an on premise cluster and it is cloud ready. Blackbalsam is open source under the MIT License.
 
 ![image](https://user-images.githubusercontent.com/306971/80296143-80684900-8746-11ea-9ad7-e2dc69d6d71f.png)
 
@@ -17,7 +17,7 @@ Access is provided via GitHub and OpenID Connect (OIDC). Whitelisted users can u
 JupyterHub provides the interface to the environment presenting a notebook providing Python and R kernels.
 
 ### Visualization
-The Jupyter notebook provides basic visualization via matplotlib, ploty, and seaborn. It also inludes bokeh, [yellowbrick](https://www.scikit-yb.org/en/latest/), and ipyleaflet to handle more specialized needs including machine learning and geographic visualization.
+The Jupyter notebook provides basic visualization via matplotlib, ploty, and [seaborn](https://seaborn.pydata.org/). It also inludes [bokeh](https://docs.bokeh.org/en/latest/index.html), [yellowbrick](https://www.scikit-yb.org/en/latest/), and [ipyleaflet](https://github.com/jupyter-widgets/ipyleaflet) to handle more specialized needs including machine learning and geographic visualization.
 ![image](https://user-images.githubusercontent.com/306971/80293212-91579100-872b-11ea-9fe3-d8bd00414794.png)
 
 ### Compute
