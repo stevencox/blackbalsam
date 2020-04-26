@@ -4,7 +4,7 @@
 
 Blackbalsam is an open source visualization and scalable computing environment providing computation infrastructure with  access to COVID-19 data sets and an emphasis on analytics relating to North Carolina.
 
-![image](https://renci.org/wp-content/themes/renaissance/images/renci-logo.png =250x250)
+![](https://renci.org/wp-content/themes/renaissance/images/renci-logo.png =250x250)
 
 ## Overview
 
