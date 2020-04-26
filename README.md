@@ -42,6 +42,14 @@ Minio supports distributed deployment scenarios which make it horizontally scala
 #### Alluxio Memory Cache
 Machine learning and big data workflows, like most, benefit from fast data access. Alluxio is a distributed memory cache interposed between multiple "under-filesystems" like NFS and analytic tools like Spark and its machine learning toolkit. It stores data in node memory, not only accelerating access but allowing failed workflows to restart and other interesting scenarios. It also supports using the Minio S3 object store as an under filesystem. Since Alluxio also supports an ACL based access control model, this creates some interesting possibilities for us to explore with regard to data sharing.
 
+## Data 
+
+### CORD-19 Dataset
+The [CORD-19 Open Research Data Set](https://www.semanticscholar.org/cord19/download) is at `/home/shared/data/cord19`
+
+### New York Times
+The New York Times COVID-19 GitHub data set is at `/home/shared/data/nytimes/covid-19-data`
+
 ## Prerequisites
 
 * Kubernetes v1.17.4
