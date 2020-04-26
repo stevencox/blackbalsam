@@ -37,8 +37,7 @@ The Minio object store provides an S3 compatible interface .
 ![image](https://user-images.githubusercontent.com/306971/80293124-8e0fd580-872a-11ea-8643-1bfbd0978368.png)
 
 Minio supports distributed deployment scenarios which make it horizontally scalable. Minio also facilitates loading large objects into Apache Spark
-![image](https://user-images.githubusercontent.com/306971/80293530-23f92f80-872e-11ea-911a-7296381cfea6.png)
-
+![image](https://user-images.githubusercontent.com/306971/80295919-0a171700-8745-11ea-8060-d32d2fe71468.png)
 
 #### Alluxio Memory Cache
 Machine learning and big data workflows, like most, benefit from fast data access. Alluxio is a distributed memory cache interposed between multiple "under-filesystems" like NFS and analytic tools like Spark and its machine learning toolkit. It stores data in node memory, not only accelerating access but allowing failed workflows to restart and other interesting scenarios. It also supports using the Minio S3 object store as an under filesystem. Since Alluxio also supports an ACL based access control model, this creates some interesting possibilities for us to explore with regard to data sharing.
