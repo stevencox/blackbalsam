@@ -231,13 +231,19 @@ alluxio () {
         export MINIO_PORT=9000
         export MINIO_ACCESS_KEY=$minio_access_key
         export MINIO_SECRET_KEY=$minio_secret_key
-        export alluxio_conf="alluxio-k8s/singleMaster-localJournal/alluxio-configmap.yaml"
-        envsubst < ${alluxio_conf}.template > $alluxio_conf
+        export alluxio_conf="./tmp/alluxio-k8s/singleMaster-localJournal/alluxio-configmap.yaml"
+
+	echo copying alluxio config templates...
+	mkdir -p tmp
+	cp -r alluxio-k8s ./tmp
+
+	envsubst < ${alluxio_conf}.template > $alluxio_conf
         echo "  configured. creating kubernetes artifacts."
         kubectl apply \
 		--namespace $NAMESPACE \
 		--recursive=true \
-		-f alluxio-k8s
+		-f ./tmp/alluxio-k8s
+	rm -rf ./tmp/alluxio-k8s	
     }
     down () {
         echo "uninstalling alluxio..."
