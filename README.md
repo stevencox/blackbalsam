@@ -6,7 +6,7 @@
 
 ## Overview
 
-Blackbalsam's JupyterHub notebook environment features artificial intelligence, visualization, and scalable computing capabilities. It also features the ability to dynamically create personal Spark clusters using the underlying Kubernetes infrastructure. The prototype system runs at the [Renaissance Computing Institute](https://renci.org/) in an on premise cluster and it is cloud ready. Blackbalsam is open source under the MIT License.
+Blackbalsam's JupyterHub notebook environment features artificial intelligence, visualization, and scalable computing capabilities. It also features the ability to dynamically create personal Spark clusters using the underlying Kubernetes infrastructure. The prototype runs at the [Renaissance Computing Institute](https://renci.org/) in an on premise cluster, is cloud ready, and is open source under the MIT License.
 
 ### Authentication
 Access is provided via GitHub and OpenID Connect (OIDC). Whitelisted users can use their GitHub identity to login and start working immediately.
@@ -18,14 +18,14 @@ The Blackbalsam notebook includes Tensorflow, Keras, Gensim, PyTorch, scikit-lea
 JupyterHub provides the interface to the environment presenting a notebook providing Python and R kernels.
 
 ### Visualization
-The Blackbalsam notebook provides visualization via [matplotlib](https://matplotlib.org/), [plotly](https://plotly.com/), and [seaborn](https://seaborn.pydata.org/). It also includes [bokeh](https://docs.bokeh.org/en/latest/index.html), [yellowbrick](https://www.scikit-yb.org/en/latest/), and [ipyleaflet](https://github.com/jupyter-widgets/ipyleaflet) to handle more specialized needs including machine learning and geographic visualization. This figure shows a leaflet geo visualization component in Jupyter:
+The Blackbalsam notebook includes [matplotlib](https://matplotlib.org/), [plotly](https://plotly.com/), and [seaborn](https://seaborn.pydata.org/). It also includes [bokeh](https://docs.bokeh.org/en/latest/index.html), [yellowbrick](https://www.scikit-yb.org/en/latest/), and [ipyleaflet](https://github.com/jupyter-widgets/ipyleaflet) to handle more specialized needs including machine learning and geospatial visualization. This figure shows a Leaflet component in Jupyter:
 ![image](https://user-images.githubusercontent.com/306971/80293212-91579100-872b-11ea-9fe3-d8bd00414794.png)
 
-And here's a county level US map using Pandas and Plotly, both available by default:
+And here's a county level US map using Pandas and Plotly:
 ![image](https://user-images.githubusercontent.com/306971/80328291-eb7c5300-880c-11ea-92f1-8ff9be9cd493.png)
 
 ### Compute
-The Jupyter notebook is also instrumented to allow dynamically launching a customized, personal Apache Spark cluster of a user specified size through the Kubernetes API. In this figure, we see the notebook for loading the Python interface to Blackbalsam and creating a four worker Spark cluster. After creating the cluster, it uses Spark's resilient distributed dataset (RDD) interface and its functional programming paradigm to map an operator to each loaded article.
+The Blackbalsam notebook is instrumented to allow dynamically launching a customized, personal Apache Spark cluster of a user specified topology through the Kubernetes API. In this figure, we see the notebook for loading the Python interface to Blackbalsam and creating a four worker Spark cluster. After creating the cluster, it uses Spark's resilient distributed dataset (RDD) interface and its functional programming paradigm to apply a functional operator to each loaded article.
 ![image](https://user-images.githubusercontent.com/306971/80293315-60c42700-872c-11ea-8b29-6a954bc54e80.png)
 
 The mechanics of configuring and launching the cluster are handled transparently to the user. Exiting the notebook kernel deallocates the cluster. This figure shows the four 1GB Spark workers created by the previous steps.
