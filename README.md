@@ -57,6 +57,7 @@ The [New York Times COVID-19](https://github.com/nytimes/covid-19-data) GitHub d
 
 So, on disk, that looks like this:
 ```
+data
 |-- cord19
 |   |-- all_sources_metadata_2020-03-13.readme
 |   |-- antiviral_with_properties.sdf.gz
@@ -67,6 +68,9 @@ So, on disk, that looks like this:
 |   |-- custom_license.tar.gz
 |   |-- metadata.csv
 |   `-- noncomm_use_subset.tar.gz
+|-- gis
+|   |-- us-counties.json
+|   `-- us-states.json
 `-- nytimes
     `-- covid-19-data
         |-- LICENSE
@@ -74,7 +78,6 @@ So, on disk, that looks like this:
         |-- us-counties.csv
         |-- us-states.csv
         `-- us.csv
-
 ```
 ## Prerequisites
 
