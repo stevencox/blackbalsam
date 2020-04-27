@@ -6,7 +6,7 @@
 
 ## Overview
 
-Blackbalsam's JupyterHub notebook environment features artificial intelligence, visualization, and scalable computing capabilities. It also features the ability to dynamically create personal Spark clusters using the underlying Kubernetes infrastructure. The prototype runs at the [Renaissance Computing Institute](https://renci.org/) in an on premise cluster, is cloud ready, and is open source under the MIT License.
+Blackbalsam's JupyterHub notebook environment features artificial intelligence, visualization, and scalable computing capabilities. Integration of the Jupyter environment with Apache Spark and Kubernetes allows users to dynamically create personal Spark clusters with user specified attributes. These interface and compute capabilities are coupled to a tiered storage platform including networked filesystem access to COVID-19 data sets, the Mino S3 compatible object store, and the Alluxio distributed memory cache. The prototype runs at the [Renaissance Computing Institute](https://renci.org/) in an on premise cluster, is cloud ready, and is open source under the MIT License.
 
 ### Authentication
 Access is provided via GitHub and OpenID Connect (OIDC). Whitelisted users can use their GitHub identity to login and start working immediately.
