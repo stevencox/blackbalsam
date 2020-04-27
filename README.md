@@ -159,7 +159,7 @@ From [Wikipedia](https://en.wikipedia.org/wiki/Black_Balsam_Knob):
 * [ ] **Tools**: Incorporate additional tools and libraries by tracking user demand.
 * [ ] **Infrastructure**:
   * [ ] **Certificate**: We need a real certificate for the site.
-  * [ ] **Deployment Model**: Deployment needs improvements in the areas of secret management, continuous integration, testing, and tools like Helm.
+  * [ ] **Deployment Model**: Improvements are ongoing in the areas of secret management, continuous integration, testing, and application of Helm.
 
 ![image](https://user-images.githubusercontent.com/306971/80296143-80684900-8746-11ea-9ad7-e2dc69d6d71f.png)
 
