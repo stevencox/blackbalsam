@@ -154,10 +154,10 @@ From [Wikipedia](https://en.wikipedia.org/wiki/Black_Balsam_Knob):
 
 ## Next Steps:
 
-* [ ] **AI Infrastructure**: The current cluster does not have GPUs. Fixing that is partially a matter of purchasing and configuring hardware. But limitations in JupyterHub's support for multi-profile environments on Kubernetes will require us to research alternatives for deploying multiple notebook types effectively in this context.
+* [ ] **AI & ML**: The current cluster does not have GPUs. Fixing that is partially a matter of purchasing and configuring hardware. But limitations in JupyterHub's support for multi-profile environments on Kubernetes will require us to research alternatives for deploying multiple notebook types effectively in this context.
 * [ ] **Persistence**: Further testing and integration of Alluxion and S3 interfaces with Spark is needed. S3 and NFS persistence mechanisms are relatively robust but Alluxio integration remains untested.
 * [ ] **Tools**: Incorporate additional tools and libraries by tracking user demand.
-* [ ] **Assorted Infrastructure**:
+* [ ] **Infrastructure**:
   * [ ] **Certificate**: We need a real certificate for the site.
   * [ ] **Deployment Model**: Deployment needs improvements in the areas of secret management, continuous integration, testing, and tools like Helm.
 
