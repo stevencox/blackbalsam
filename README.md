@@ -2,7 +2,7 @@
 
 ![image](https://user-images.githubusercontent.com/306971/80292483-05426b00-8725-11ea-9ab3-0686c8a6c76a.png)
 
-[Blackbalsam](https://blackbalsam.renci.org/blackbalsam/hub/login) is an open source analytics and visualization environment providing access to COVID-19 data sets with an emphasis on analytics relating to North Carolina.
+[Blackbalsam](https://blackbalsam.renci.org/blackbalsam/hub/login) is an open source analytics and visualization environment providing access to COVID-19 data sets with an emphasis on North Carolina.
 
 ## Overview
 
