@@ -6,7 +6,7 @@
 
 ## Overview
 
-Blackbalsam's JupyterHub interface features a notebook environment with extensive artificial intelligence, visualization, and scalable computing capabilities built in. It also features ability to dynamically create personal Spark clusters using the underlying Kubernetes infrastructure. The prototype system runs at the [Renaissance Computing Institute](https://renci.org/) in an on premise cluster and it is cloud ready. Blackbalsam is open source under the MIT License.
+Blackbalsam's JupyterHub notebook environment features artificial intelligence, visualization, and scalable computing capabilities. It also features the ability to dynamically create personal Spark clusters using the underlying Kubernetes infrastructure. The prototype system runs at the [Renaissance Computing Institute](https://renci.org/) in an on premise cluster and it is cloud ready. Blackbalsam is open source under the MIT License.
 
 ### Authentication
 Access is provided via GitHub and OpenID Connect (OIDC). Whitelisted users can use their GitHub identity to login and start working immediately.
@@ -15,7 +15,7 @@ Access is provided via GitHub and OpenID Connect (OIDC). Whitelisted users can u
 JupyterHub provides the interface to the environment presenting a notebook providing Python and R kernels.
 
 ### Visualization
-The Jupyter notebook provides basic visualization via matplotlib, ploty, and [seaborn](https://seaborn.pydata.org/). It also inludes [bokeh](https://docs.bokeh.org/en/latest/index.html), [yellowbrick](https://www.scikit-yb.org/en/latest/), and [ipyleaflet](https://github.com/jupyter-widgets/ipyleaflet) to handle more specialized needs including machine learning and geographic visualization.
+The Jupyter notebook provides basic visualization via [matplotlib](https://matplotlib.org/), [plotly](https://plotly.com/), and [seaborn](https://seaborn.pydata.org/). It also inludes [bokeh](https://docs.bokeh.org/en/latest/index.html), [yellowbrick](https://www.scikit-yb.org/en/latest/), and [ipyleaflet](https://github.com/jupyter-widgets/ipyleaflet) to handle more specialized needs including machine learning and geographic visualization.
 ![image](https://user-images.githubusercontent.com/306971/80293212-91579100-872b-11ea-9fe3-d8bd00414794.png)
 
 ### Compute
