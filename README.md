@@ -92,7 +92,6 @@ The following figure depicts Blackbalsam's design at a high level.
 * Kubernetes v1.17.4
 * kubectl >=v1.17.4
 * Python 3.7.x
-* A Python virtual environment including yamlpath==2.3.4
 
 ## Installation
 
@@ -113,10 +112,15 @@ github_oauth_callback=http://<your-domain-name>/blackbalsam/oauth_callback
 minio_access_key=<minio-access-key>
 minio_secret_key=<minio-secret-key>   
 ```
+Ensure you have kubectl configured to point to a Kubernetes cluster.
+
 ### Executing the Install
+Clone the repository. Create a virtual environment, populate the environment, and run the installer.
 ```
 git clone git@github.com:stevencox/blackbalsam.git
 cd blackbalsam
+python3 -m venv ../blackbbalsam
+source ../blackbalsam/bin/activate
 bin/blackbalsam up
 ```
 
