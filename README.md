@@ -82,6 +82,11 @@ data
         |-- us-states.csv
         `-- us.csv
 ```
+
+# Architecture
+The following figure depicts Blackbalsam's design at a high level.
+![image](https://user-images.githubusercontent.com/306971/80366500-610d1100-8857-11ea-962f-c006113fc7f3.png)
+
 ## Prerequisites
 
 * Kubernetes v1.17.4
