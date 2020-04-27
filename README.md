@@ -12,7 +12,7 @@ Blackbalsam's JupyterHub notebook environment features artificial intelligence, 
 Access is provided via GitHub and OpenID Connect (OIDC). Whitelisted users can use their GitHub identity to login and start working immediately.
 
 ### Artificial Intelligence & Analytics
-The Blackbalsam notebook is pre-loaded with Tensorflow, Keras, Gensim, PyTorch, scikit-learn, pandas, and numpy. Users can also easily create Spark clusters providing access to Spark's [MLlib](https://spark.apache.org/docs/latest/ml-guide.html) machine learning toolkit.
+The Blackbalsam notebook includes Tensorflow, Keras, Gensim, PyTorch, scikit-learn, pandas, and numpy. Users can also easily create Spark clusters providing access to Spark's [MLlib](https://spark.apache.org/docs/latest/ml-guide.html) machine learning toolkit.
 
 ### Notebook Computing
 JupyterHub provides the interface to the environment presenting a notebook providing Python and R kernels.
