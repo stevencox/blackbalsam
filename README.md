@@ -31,7 +31,7 @@ The Jupyter notebook is also instrumented to allow dynamically launching a custo
 The mechanics of configuring and launching the cluster are handled transparently to the user. Exiting the notebook kernel deallocates the cluster. This figure shows the four 1GB Spark workers created by the previous steps.
 ![image](https://user-images.githubusercontent.com/306971/80293355-ae409400-872c-11ea-94d7-73b50e67bf7a.png)
 
-Creating the Word2Vec model is straightforward:
+Next, we create a Word2Vec word embedding using the provided Spark machine learning libraries:
 ![image](https://user-images.githubusercontent.com/306971/80293487-c664e300-872d-11ea-809f-454cdb1c395e.png)
 
 ### Storage
