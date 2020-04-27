@@ -15,18 +15,11 @@ RUN set -ex && \
 	ln -s /lib /lib64 && \
 	apt-get install -y bash libc6 libpam-modules libnss3 wget python3 python3-pip && \
 	chmod +x /bin/tini && \
-#	apt-get install -y bash tini libc6 libpam-modules libnss3 wget python3 python3-pip && \
-#	mkdir -p /opt/hadoop && \
-#	mkdir -p /opt/spark && \
-#	mkdir -p /opt/spark/examples && \
-#	mkdir -p /opt/spark/work-dir && \
-#	touch /opt/spark/RELEASE && \
 	rm /bin/sh && \
 	ln -sv /bin/bash /bin/sh && \
 	ln -sv /usr/bin/tini /sbin/tini && \
 	echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
 	chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
-#	ln -sv /usr/bin/python3 /usr/bin/python && \
 	ln -sv /usr/bin/pip3 /usr/bin/pip \
 	rm -rf /var/cache/apt/*
 
@@ -82,7 +75,7 @@ RUN pip install jupyter-spark \
 	&& pip install nbconvert==5.3.1 tornado==5.0
 
 # Install AI toolkit (Tensorflow, Keras, Gensim, PyTorch, sklearn, numpy, OpenKE)
-#RUN pip install --upgrade tensorflow keras gensim sklearn numpy torch
+RUN pip install --upgrade tensorflow keras gensim sklearn numpy torch
 #    git clone https://github.com/thunlp/OpenKE.git && \
 #    cd OpenKE/openke && \
 #    ./make.sh
