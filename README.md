@@ -11,6 +11,9 @@ Blackbalsam's JupyterHub notebook environment features artificial intelligence, 
 ### Authentication
 Access is provided via GitHub and OpenID Connect (OIDC). Whitelisted users can use their GitHub identity to login and start working immediately.
 
+### Artificial Intelligence & Analytics
+The Blackbalsam notebook is pre-loaded with Tensorflow, Keras, Gensim, PyTorch, scikit-learn, pandas, and numpy.
+
 ### Notebook Computing
 JupyterHub provides the interface to the environment presenting a notebook providing Python and R kernels.
 
