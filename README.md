@@ -50,45 +50,8 @@ Machine learning and big data workflows, like most, benefit from fast data acces
 
 ## Data 
 
-More data sets will be added soon. The ones below reference a `/home/shared` directory which is mounted to each Jupyter notebook instance.
-
-### CORD-19 Dataset
-The [CORD-19 Open Research Data Set](https://www.semanticscholar.org/cord19/download) is at `/home/shared/data/cord19`
-
-### New York Times
-The [New York Times COVID-19](https://github.com/nytimes/covid-19-data) GitHub data set is at `/home/shared/data/nytimes/covid-19-data`
-
-### PM_COVID
-The [COVID-19 and Particulate Matter link](https://projects.iq.harvard.edu/covid-pm/home) and related [analytics](https://github.com/wxwx1993/PM_COVID) are at `/home/shared/data/PM_COVID`.
-
-So, on disk, that looks like this:
-```
-data
-|-- PM_COVID
-|   |-- Analyses.R
-|   |-- Data
-|   |-- Figure.R
-|   |-- LICENSE
-|   |-- Manuscript
-|   |-- Preprocessing.R
-|   |-- README.md
-|   `-- additional_preprocessing_code
-|-- cord19
-|   |-- all_sources_metadata_2020-03-13.readme
-|   |-- antiviral_with_properties.sdf.gz
-|   |-- biorxiv_medrxiv.tar.gz
-|   |-- candidate_compounts.readme
-|   |-- comm_use_subset.tar.gz
-|   |-- cord_19_embeddings_4_24.tar.gz
-|   |-- custom_license.tar.gz
-|   |-- metadata.csv
-|   `-- noncomm_use_subset.tar.gz
-|-- gis
-|   |-- us-counties.json
-|   `-- us-states.json
-`-- nytimes
-    `-- covid-19-data
-```
+### COVID-19 
+The first Blackbalsam instance is the RENCI COVID-19 platform. The data set aggregator for that instance can be seen [here](https://github.com/stevencox/blackbalsam-covid-19-data/blob/master/update).
 
 # Architecture
 The following figure depicts Blackbalsam's design at a high level.
