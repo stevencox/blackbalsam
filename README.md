@@ -59,7 +59,7 @@ The [CORD-19 Open Research Data Set](https://www.semanticscholar.org/cord19/down
 The [New York Times COVID-19](https://github.com/nytimes/covid-19-data) GitHub data set is at `/home/shared/data/nytimes/covid-19-data`
 
 ### PM_COVID
-The [link between COVID-19 and Particulate Matter](https://projects.iq.harvard.edu/covid-pm/home) and related analytics from this [repo](https://github.com/wxwx1993/PM_COVID) are at `/home/shared/data/PM_COVID`.
+The [COVID-19 and Particulate Matter link](https://projects.iq.harvard.edu/covid-pm/home) and related [analytics](https://github.com/wxwx1993/PM_COVID) are at `/home/shared/data/PM_COVID`.
 
 So, on disk, that looks like this:
 ```
