@@ -58,9 +58,21 @@ The [CORD-19 Open Research Data Set](https://www.semanticscholar.org/cord19/down
 ### New York Times
 The [New York Times COVID-19](https://github.com/nytimes/covid-19-data) GitHub data set is at `/home/shared/data/nytimes/covid-19-data`
 
+### PM_COVID
+The [link between COVID-19 and Particulate Matter](https://projects.iq.harvard.edu/covid-pm/home) and related analytics from this [repo](https://github.com/wxwx1993/PM_COVID) are at `/home/shared/data/PM_COVID`.
+
 So, on disk, that looks like this:
 ```
 data
+|-- PM_COVID
+|   |-- Analyses.R
+|   |-- Data
+|   |-- Figure.R
+|   |-- LICENSE
+|   |-- Manuscript
+|   |-- Preprocessing.R
+|   |-- README.md
+|   `-- additional_preprocessing_code
 |-- cord19
 |   |-- all_sources_metadata_2020-03-13.readme
 |   |-- antiviral_with_properties.sdf.gz
@@ -76,11 +88,6 @@ data
 |   `-- us-states.json
 `-- nytimes
     `-- covid-19-data
-        |-- LICENSE
-        |-- README.md
-        |-- us-counties.csv
-        |-- us-states.csv
-        `-- us.csv
 ```
 
 # Architecture
