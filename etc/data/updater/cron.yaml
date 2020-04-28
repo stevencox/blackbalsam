@@ -1,0 +1,24 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: update-data-set
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: update-cluster-data-sets
+            image: python:3.8.2
+            command: [ "/bin/bash" ]
+            args: [ "-c", "cd /data && rm -rf blackbalsam-covid-19-data && git clone https://github.com/stevencox/blackbalsam-covid-19-data.git && blackbalsam-covid-19-data/update update_data" ]
+            volumeMounts:
+            - name: blackbalsam-pvc
+              mountPath: /data
+              subPath: data
+          restartPolicy: OnFailure
+          volumes:
+          - name: blackbalsam-pvc
+            persistentVolumeClaim:
+              claimName: blackbalsam-jhub-nfs-pvc

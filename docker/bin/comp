@@ -6,13 +6,14 @@ set -e
 repo=blackbalsam
 
 function get_ver () {
-    if [ ! -f "bin/.ver" ]
+    local mod=$1
+    if [ ! -f "$mod/.ver" ]
     then
         echo "The version file .ver does not exist."
-        echo "Please check for or re-create bin/.ver"
+        echo "Please check for or re-create $mod/.ver"
         return 255
     fi
-    ver=$(< bin/.ver)
+    ver=$(< $mod/.ver)
     echo "$ver"
     return 0
 }
@@ -21,7 +22,7 @@ build () {
     if [ -z "$mod" ]; then
         echo module name required
     fi
-    newversion=$(get_ver)
+    newversion=$(get_ver $mod)
     rc=$?
     if [ $rc -eq 255 ]
     then
@@ -38,7 +39,7 @@ push () {
     if [ -z "$mod" ]; then
         echo module name required
     fi
-    vers=$(get_ver)
+    vers=$(get_ver $mod)
     rc=$?
     if [ $rc -eq 255 ]
     then
