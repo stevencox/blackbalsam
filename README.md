@@ -51,7 +51,7 @@ Machine learning and big data workflows, like most, benefit from fast data acces
 ## Data 
 
 ### COVID-19 
-The first Blackbalsam instance is the RENCI COVID-19 platform. The data set aggregator for that instance can be seen [here](https://github.com/stevencox/blackbalsam-covid-19-data). Submit GitHub pull requests to that repository to request new data.
+The first Blackbalsam instance is the RENCI COVID-19 platform. Its data set aggregator is [here](https://github.com/stevencox/blackbalsam-covid-19-data). See the repository's description for information on how to request new data.
 
 A Kubernetes periodic task exectues the data repository update script hourly.
 
@@ -127,7 +127,7 @@ Then, go to https://{your-domain}/blackbalsam/ to visit the application.
 ### Help
 For additional information on the command line management interface, see the help feature:
 ```
-scox@morgancreek ~/dev/blackbalsam$ bin/blackbalsam help
+$ bin/blackbalsam help
 bin/blackbalsam is a data science cluster architecture.
 
 User Experience Services:
@@ -155,21 +155,18 @@ Data Services:
   data stop	Stop the running data update task if one exists
 
 Secrets:
-  secrets	Manage secrets
-  secrets up	Create secrets based on environment conifguration.
-  secrets down	Delete created secrets.
-  secrets status	Show status of secrets.
+  secret	Manage secrets
+  secret up	Create secrets based on environment conifguration.
+  secret down	Delete created secrets.
+  secret status	Show status of secrets.
 
-Overall Management:
+General:
   up    	Execute configurations and start all services.
   down  	Stop all cluster components and services.
   restart	Stop and start all system components.
   status	Report on Kubernetes components of the system in detail.
   nodes 	Display detailed usage and status for cluster nodes.
-
-Other Commands:
   help  	Show this message.
-
 ```
 
 ## About
