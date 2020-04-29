@@ -4,6 +4,29 @@
 
 [Blackbalsam](https://blackbalsam.renci.org/blackbalsam/hub/login) is an open source data science environment with an initial focus on COVID-19 and North Carolina.
 
+   * [Blackbalsam](#blackbalsam)
+      * [Overview](#overview)
+         * [Authentication](#authentication)
+         * [Artificial Intelligence &amp; Analytics](#artificial-intelligence--analytics)
+         * [Notebook Computing](#notebook-computing)
+         * [Visualization](#visualization)
+         * [Compute](#compute)
+         * [Storage](#storage)
+            * [NFS](#nfs)
+            * [Object Store](#object-store)
+            * [Alluxio Memory Cache](#alluxio-memory-cache)
+      * [Data](#data)
+         * [COVID-19](#covid-19)
+   * [Architecture](#architecture)
+      * [Prerequisites](#prerequisites)
+      * [Installation](#installation)
+         * [Authentication](#authentication-1)
+         * [Environment Configuration](#environment-configuration)
+         * [Executing the Install](#executing-the-install)
+         * [Help](#help)
+   * [About](#about)
+   * [Next Steps:](#next-steps)
+   
 ## Overview
 
 Blackbalsam's **interface** uses JupyterHub notebook environment featuring artificial intelligence, visualization, and scalable computing capabilities. For **computation**, integration of the Jupyter environment with Apache Spark and Kubernetes allows users to dynamically create personal Spark clusters with user specified attributes. These interface and compute capabilities are coupled to a tiered **storage** platform including networked filesystem access to COVID-19 data sets, the Mino S3 compatible object store, and the Alluxio distributed memory cache. The prototype runs at the [Renaissance Computing Institute](https://renci.org/) in an on premise cluster, is cloud ready, and is open source under the MIT License.
