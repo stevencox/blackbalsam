@@ -127,7 +127,7 @@ Then, go to https://{your-domain}/blackbalsam/ to visit the application.
 ### Help
 For additional information on the command line management interface, see the help feature:
 ```
-scox@morgancreek ~/dev/blackbalsam$ bin/blackbalsam help
+$ bin/blackbalsam help
 bin/blackbalsam is a data science cluster architecture.
 
 User Experience Services:
@@ -155,21 +155,18 @@ Data Services:
   data stop	Stop the running data update task if one exists
 
 Secrets:
-  secrets	Manage secrets
-  secrets up	Create secrets based on environment conifguration.
-  secrets down	Delete created secrets.
-  secrets status	Show status of secrets.
+  secret	Manage secrets
+  secret up	Create secrets based on environment conifguration.
+  secret down	Delete created secrets.
+  secret status	Show status of secrets.
 
-Overall Management:
+General:
   up    	Execute configurations and start all services.
   down  	Stop all cluster components and services.
   restart	Stop and start all system components.
   status	Report on Kubernetes components of the system in detail.
   nodes 	Display detailed usage and status for cluster nodes.
-
-Other Commands:
   help  	Show this message.
-
 ```
 
 ## About
