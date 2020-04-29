@@ -127,7 +127,7 @@ Then, go to https://{your-domain}/blackbalsam/ to visit the application.
 ### Help
 For additional information on the command line management interface, see the help feature:
 ```
-(blackbalsam) scox@morgancreek ~/dev/blackbalsam$ bin/blackbalsam help
+scox@morgancreek ~/dev/blackbalsam$ bin/blackbalsam help
 bin/blackbalsam is a data science cluster architecture.
 
 User Experience Services:
@@ -135,9 +135,6 @@ User Experience Services:
   hub up	Start JupyterHub. Configure Ambassador, storage, etc. Also used to update the configuration.
   hub down	Stop JupyterHub.
   hub restart	Restart the JupyterHub service.
-
-Compute Services:
-  spark 	Build, publish, Apache Spark and Alluxio containers.
 
 Storage Services:
   alluxio	Manage cluster deployment of Alluxio services.
@@ -172,6 +169,7 @@ Overall Management:
 
 Other Commands:
   help  	Show this message.
+
 ```
 
 ## About
