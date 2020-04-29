@@ -64,7 +64,7 @@ secrets () {
 	    yaml_set_val stringData.minio_access_key $minio_access_key $secret_config
 	    yaml_set_val stringData.minio_secret_key $minio_secret_key $secret_config
 	    yaml_set_val stringData.neo4j_password $neo4j_password $secret_config
-	    kubectl --namespace $NAMESPACE apply -f $secret_config
+	    kc apply -f $secret_config
 	fi
     }
     down () {
@@ -292,6 +292,9 @@ alluxio () {
 #############################################################
 neo4j () {
     up () {
+#	config=$ETC/neo4j/neo4j-deployment.yaml
+#	cp $config.template 
+#	yaml_set_val spec.template.spec.containers[0].env.valueFrom.secretKeyRef. $neo4j_password $config
 	kubectl --namespace $NAMESPACE apply -f etc/neo4j
     }
     down () {

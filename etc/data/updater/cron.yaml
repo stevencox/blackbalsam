@@ -4,6 +4,8 @@ metadata:
   name: update-data-set
 spec:
   schedule: "0 * * * *"
+  successfulJobsHistoryLimit: 0
+  failedJobsHistoryLimit: 5
   jobTemplate:
     spec:
       template:
