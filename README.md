@@ -64,6 +64,8 @@ The following figure depicts Blackbalsam's design at a high level.
 * Kubernetes v1.17.4
 * kubectl >=v1.17.4
 * Python 3.7.x
+* The Linux [envsubst](https://www.gnu.org/software/gettext/manual/html_node/envsubst-Invocation.html) command
+* Helm 2 (a JupyterHub dependency)
 
 ## Installation
 
