@@ -3,52 +3,46 @@
 #############################################################
 ##
 ##  B L A C K B A L S A M
-## 
-##    A multi modal data science environment featuring
-##       User Experience: Jupyter Notebooks...
-##       Compute: CPU / GPU / Apache Spark
-##       Storage: NFS / S3 / Alluxio
-## 
 ##
+##  https://github.com/stevencox/blackbalsam
+##
+##  A multi modal data science environment featuring
+##    User Experience: Jupyter Notebooks
+##    Visualization: Plotly, Bokeh, Leaflet, Yellowbrick, Seaborn,...
+##    Compute: CPU / GPU / Apache Spark
+##    Storage: NFS / Minio & S3 / Alluxio
+## 
 #############################################################
-#set -x
-set -e
-
-# https://oak-tree.tech/
+set -e #x
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 BLACKBALSAM_HOME=$( dirname $DIR )
 
 export RELEASE=blackbalsam
 export NAMESPACE=blackbalsam
-export VERSION=0.8.2
+export JHUB_VERSION=0.8.2
 export DIST=$BLACKBALSAM_HOME/bin
 export ETC=$BLACKBALSAM_HOME/etc
 export PATH=$DIST/darwin-amd64:$PATH
+# TODO: This is OSX specific. Fix.
 export helm_dist=helm-v2.16.3-darwin-amd64.tar.gz
 export helm_url=https://get.helm.sh/$helm_dist
-#172.25.16.225-172.25.16.229
 
 #############################################################
 ##
-##  Make namespace: Initialize the namespace.
+##  Utilities:
+##    Make namespace: Initialize the namespace.
+##    Set YAML value
+##    Generate secrets
 ##
 #############################################################
+kc () {
+    kubectl --namespace $NAMESPACE $*
+}
 make_namespace () {
     if [ "$(kubectl get namespaces | grep -c $NAMESPACE)" == 0 ]; then
         kubectl create namespace $NAMESPACE
     fi
-}
-spark () {
-    up () {
-	pushd $BLACKBALSAM_HOME/spark-alluxio
-	#./build build
-	popd
-    }
-    down () {
-	echo
-    }
-    $*
 }
 yaml_set_val () {
     yaml-set \
@@ -56,6 +50,38 @@ yaml_set_val () {
         --value=$2 \
         -F dquote \
         $3
+}
+secrets () {
+    secret_name=blackbalsam-secrets
+    secret_config=$ETC/secrets/secrets.yaml
+    query="{.items[?(@.metadata.name=='"$secret_name"')].metadata.name}"
+    secret_exists=$(kc get secrets -o=jsonpath="$query" | grep -c $secret_name || true)
+    up () {
+	if [ "$secret_exists" -eq 0 ]; then
+	    cp $secret_config.template $secret_config
+	    yaml_set_val stringData.jupyterhub_secret_token $jupyterhub_secret_token $secret_config
+	    yaml_set_val stringData.github_client_secret $github_client_secret $secret_config
+	    yaml_set_val stringData.minio_access_key $minio_access_key $secret_config
+	    yaml_set_val stringData.minio_secret_key $minio_secret_key $secret_config
+	    yaml_set_val stringData.neo4j_password $neo4j_password $secret_config
+	    kubectl --namespace $NAMESPACE apply -f $secret_config
+	fi
+    }
+    down () {
+	if [ "$secret_exists" -eq 0 ]; then
+	    echo no secrets found
+	else
+	    kc delete -f $secret_config
+	fi
+    }
+    status () {
+	if [ "$secret_exists" -eq 0 ]; then
+	    echo no secrets found
+	else
+	    kc get secrets/$secret_name -o=yaml
+	fi
+    }
+    $*
 }
 #############################################################
 ##
@@ -110,7 +136,7 @@ hub () {
 	
         helm upgrade --install $RELEASE jupyterhub/jupyterhub \
              --namespace $NAMESPACE  \
-             --version=$VERSION \
+             --version=$JHUB_VERSION \
              --values config.yaml
         proxy
         patch
@@ -261,11 +287,52 @@ alluxio () {
 }
 #############################################################
 ##
+## Manage the Neo4J database.
+##
+#############################################################
+neo4j () {
+    up () {
+	kubectl --namespace $NAMESPACE apply -f etc/neo4j
+    }
+    down () {
+	kubectl --namespace $NAMESPACE delete -f etc/neo4j
+    }
+    restart () {
+	down
+	up
+    }
+    $*
+}
+#############################################################
+##
+## Manage the data corpus this cluster provides
+##
+#############################################################
+data () {
+    up () {
+	# Create the updater.
+	kubectl --namespace $NAMESPACE apply -f etc/data/updater
+    }
+    down () {
+	# Delete the udpater.
+	kubectl --namespace $NAMESPACE delete -f etc/data/updater
+    }
+    run () {
+	# Run a refresh job now.
+	kubectl --namespace $NAMESPACE create job --from=cronjob/update-data-set update-data
+    }
+    stop () {
+	# Stop the running refresh job.
+	kubectl --namespace $NAMESPACE delete job/update-data
+    }
+    $*
+}
+#############################################################
+##
 ##  Manage the system as a whole.
 ##
 #############################################################
-SYSTEMS="minio alluxio spark proxy hub"
-SYSTEMS="minio spark proxy hub"
+SYSTEMS="secrets minio alluxio neo4j proxy hub"
 up () {
     echo installing blackbalsam...
     for system in $SYSTEMS; do
@@ -317,7 +384,6 @@ init () {
 			grep -c tiller)
 
     if [ $tiller_status -eq 1 ]; then
-	echo tiller already installed. continuing...
 	return 
     fi
     echo installing tiller...
@@ -356,21 +422,39 @@ $0 is a data science cluster architecture.
 
 User Experience Services:
   hub   \tConfigure, install, and uninstall JupyterHub notebook server.
-
-Compute Services:
-  spark \tBuild, publish, Apache Spark and Alluxio containers.
+  hub up\tStart JupyterHub. Configure Ambassador, storage, etc. Also used to update the configuration.
+  hub down\tStop JupyterHub.
+  hub restart\tRestart the JupyterHub service.
 
 Storage Services:
   alluxio\tManage cluster deployment of Alluxio services.
+  alluxio up\tInstall Alluxio and distributed workers.
+  alluxio down\tDelete the Alluxio network.
   minio \tManage cluster deployment of the Minio S3 system.
+  minio up\tInstall Minio. Creates a service called 'minio'.
+  minio down\tDelete Minio.
 
 Proxy Services:
   proxy \tManage the programmable Ambassador edge proxy.
 
+Data Services:
+  data  \tManage the data collection for this cluster.
+  data up\tInstall the periodic data update task.
+  data down\tDelete the periodic data update task.
+  data run\tRun the periodic data update task now.
+  data stop\tStop the running data update task if one exists
+
+Secrets:
+  secrets\tManage secrets
+  secrets up\tCreate secrets based on environment conifguration.
+  secrets down\tDelete created secrets.
+  secrets status\tShow status of secrets.
+
 Overall Management:
-  status\tReport on Kubernetes components of the system in detail.
   up    \tExecute configurations and start all services.
-  down  \tStop all cluster components and services
+  down  \tStop all cluster components and services.
+  restart\tStop and start all system components.
+  status\tReport on Kubernetes components of the system in detail.
   nodes \tDisplay detailed usage and status for cluster nodes.
 
 Other Commands:
