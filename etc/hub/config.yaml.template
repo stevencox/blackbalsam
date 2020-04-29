@@ -38,6 +38,9 @@ singleuser:
     extraVolumeMounts:
       - name: jupyterhub-shared
         mountPath: /home/shared
+      - name: jupyterhub-shared
+        mountPath: /home/jovyan/examples
+        subPath: examples
       - name: kubernetes-cert
         mountPath: /etc/kubernetes/ssl/ca.crt
         readOnly: true

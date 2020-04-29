@@ -16,41 +16,6 @@ from pyspark.sql import SparkSession
 global sqlContext
 
 logger = logging.getLogger (__name__)
-
-class Corpus:
-    def __init__(self,
-                 store,
-                 location="/home/shared/blackbalsam",
-                 urls=[
-                     "https://ai2-semanticscholar-cord-19.s3-us-west-2.amazonaws.com/2020-03-20/noncomm_use_subset.tar.gz"
-                 ],
-                 dry_run=False):
-        bucket = "covid-19"
-        self.dry_run = dry_run
-        self.store = store
-        self.location = os.path.join (location, bucket)
-        self.urls = urls
-        self.bucket = bucket
-        if not os.path.exists (self.location):
-            logger.error (f"Required directory {self.location} does not exist")
-            #os.makedirs (self.location)
-            
-        logger.info ("populating corpus...")
-        for url in urls:
-            logger.debug (f"getting url {url}")
-            base_name = os.path.basename (url)
-            output_filename=os.path.join (self.location, base_name)
-            if os.path.exists (output_filename):
-                logger.debug (f"skipping {output_filename}. file exists.")
-            else:
-                if self.dry_run:
-                    return
-                response = requests.get(url, stream=True)
-                if response.status_code == 200:
-                    logger.debug (f"  --creating output file {output_filename}")
-                    with open(output_filename, 'wb') as f:
-                        f.write(response.raw.read())
-                    self.store.add (base_name, bucket)
                     
 class Storage:
     """ Storage abstraction. """
@@ -111,8 +76,6 @@ class Blackbalsam:
             secret_key = self.environ_config.get (
                 "spark.hadoop.fs.s3a.secret.key", "minio123"))
             
-        self.corpus = Corpus (store=self.store, dry_run=dry_run)
-        
     def get_config (self):
         config = {}
         home_dir = os.path.expanduser("~")        
@@ -198,6 +161,8 @@ class Blackbalsam:
             "com.amazonaws.services.s3.disableGetObjectMD5Validation" : "true",
             "spark.hadoop.fs.s3a.attempts.maximum"  : "3",
             "spark.hadoop.fs.s3a.connection.timeout": "10000"
+#            spark.kubernetes.driver.secretKeyRef.ENV_NAME=name:key
+#            spark.kubernetes.executor.secretKeyRef.ENV_NAME=name:key
         }
 #        self.environ_config.update (default_conf)
 #        self.environ_config.update (conf)
