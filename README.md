@@ -124,6 +124,56 @@ Note that this is still an alpha release! If you have questions, feel free to
 ```
 Then, go to https://{your-domain}/blackbalsam/ to visit the application.
 
+### Help
+For additional information on the command line management interface, see the help feature:
+```
+(blackbalsam) scox@morgancreek ~/dev/blackbalsam$ bin/blackbalsam help
+bin/blackbalsam is a data science cluster architecture.
+
+User Experience Services:
+  hub   	Configure, install, and uninstall JupyterHub notebook server.
+  hub up	Start JupyterHub. Configure Ambassador, storage, etc. Also used to update the configuration.
+  hub down	Stop JupyterHub.
+  hub restart	Restart the JupyterHub service.
+
+Compute Services:
+  spark 	Build, publish, Apache Spark and Alluxio containers.
+
+Storage Services:
+  alluxio	Manage cluster deployment of Alluxio services.
+  alluxio up	Install Alluxio and distributed workers.
+  alluxio down	Delete the Alluxio network.
+  minio 	Manage cluster deployment of the Minio S3 system.
+  minio up	Install Minio. Creates a service called 'minio'.
+  minio down	Delete Minio.
+
+Proxy Services:
+  proxy 	Manage the programmable Ambassador edge proxy.
+
+Data Services:
+  data  	Manage the data collection for this cluster.
+  data up	Install the periodic data update task.
+  data down	Delete the periodic data update task.
+  data run	Run the periodic data update task now.
+  data stop	Stop the running data update task if one exists
+
+Secrets:
+  secrets	Manage secrets
+  secrets up	Create secrets based on environment conifguration.
+  secrets down	Delete created secrets.
+  secrets status	Show status of secrets.
+
+Overall Management:
+  up    	Execute configurations and start all services.
+  down  	Stop all cluster components and services.
+  restart	Stop and start all system components.
+  status	Report on Kubernetes components of the system in detail.
+  nodes 	Display detailed usage and status for cluster nodes.
+
+Other Commands:
+  help  	Show this message.
+```
+
 ## About
 
 From [Wikipedia](https://en.wikipedia.org/wiki/Black_Balsam_Knob):
