@@ -19,11 +19,12 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 BLACKBALSAM_HOME=$( dirname $DIR )
 
 export RELEASE=blackbalsam
-export NAMESPACE=blackbalsam
+export NAMESPACE=$RELEASE
 export JHUB_VERSION=0.8.2
 export DIST=$BLACKBALSAM_HOME/bin
 export ETC=$BLACKBALSAM_HOME/etc
 export PATH=$DIST/darwin-amd64:$PATH
+export NFS_PVC=blackbalsam-jhub-nfs-pvc
 # TODO: This is OSX specific. Fix.
 export helm_dist=helm-v2.16.3-darwin-amd64.tar.gz
 export helm_url=https://get.helm.sh/$helm_dist
@@ -51,7 +52,7 @@ yaml_set_val () {
         -F dquote \
         $3
 }
-secrets () {
+secret () {
     secret_name=blackbalsam-secrets
     secret_config=$ETC/secrets/secrets.yaml
     query="{.items[?(@.metadata.name=='"$secret_name"')].metadata.name}"
@@ -61,11 +62,15 @@ secrets () {
 	    cp $secret_config.template $secret_config
 	    yaml_set_val stringData.jupyterhub_secret_token $jupyterhub_secret_token $secret_config
 	    yaml_set_val stringData.github_client_secret $github_client_secret $secret_config
-	    yaml_set_val stringData.minio_access_key $minio_access_key $secret_config
-	    yaml_set_val stringData.minio_secret_key $minio_secret_key $secret_config
+            # Minio has standard names for these. Perhaps separate to a different secret.
+	    yaml_set_val stringData.accesskey $minio_access_key $secret_config
+	    yaml_set_val stringData.secretkey $minio_secret_key $secret_config
 	    yaml_set_val stringData.neo4j_password $neo4j_password $secret_config
 	    kc apply -f $secret_config
 	fi
+    }
+    name ()  {
+        echo $secret_name
     }
     down () {
 	if [ "$secret_exists" -eq 0 ]; then
@@ -143,13 +148,11 @@ hub () {
     }
     pvc () {
 	echo check for persistent volume claim...
-	set +e
-	pvc_exists=$(kubectl --namespace=$NAMESPACE get pvc | grep -c jhub-nfs-pvc)
+	pvc_exists=$(kubectl --namespace=$NAMESPACE get pvc | grep -c jhub-nfs-pvc || true)
 	if [ "$pvc_exists" == 0 ]; then
 	    echo install persistent volume claim...
 	    kubectl --namespace=$NAMESPACE apply -f $ETC/pvc/
 	fi
-	set -e
     }	
     proxy () {
 	if [ "$(kubectl get mapping | grep -c jupyter)" -eq 0 ]; then
@@ -223,10 +226,10 @@ minio () {
         if [ "$(helm list | grep -c minio)" == 1 ]; then
             echo == WARNING ==: A minio release is already installed.
         else
+            secret_name=$(secret name)
             helm install \
-                 --set accessKey=$minio_access_key \
-                 --set secretKey=$minio_secret_key \
-		 --set persistence.existingClaim=blackbalsam-jhub-nfs-pvc \
+                 --set existingSecret=$secret_name \
+		 --set persistence.existingClaim=$NFS_PVC \
 		 --set persistence.subPath=minio \
                  --name minio \
                  --namespace $NAMESPACE \
@@ -247,7 +250,16 @@ minio () {
 ##
 #############################################################
 alluxio () {
-    up () {
+    up () {       
+        comment () {
+            # TODO - configure secrets for alluxio.
+    env:
+      - name: MINIO_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: blackbalsam-secrets
+            key: minio_access_key
+        }
 	echo installing alluxio...
         echo "Configuring and starting alluxio..."
         export ALLUXIO_MASTER_HOST=alluxio-master-0
@@ -380,7 +392,6 @@ init () {
         exit 1
     fi
     source $HOME/.blackbalsam
-
     tiller_status=$(kubectl \
 			get deployment -n kube-system \
 			-o=jsonpath="{.items[?(@.metadata.labels.name=='tiller')].metadata.labels.name}" | \
@@ -448,19 +459,17 @@ Data Services:
   data stop\tStop the running data update task if one exists
 
 Secrets:
-  secrets\tManage secrets
-  secrets up\tCreate secrets based on environment conifguration.
-  secrets down\tDelete created secrets.
-  secrets status\tShow status of secrets.
+  secret\tManage secrets
+  secret up\tCreate secrets based on environment conifguration.
+  secret down\tDelete created secrets.
+  secret status\tShow status of secrets.
 
-Overall Management:
+General:
   up    \tExecute configurations and start all services.
   down  \tStop all cluster components and services.
   restart\tStop and start all system components.
   status\tReport on Kubernetes components of the system in detail.
   nodes \tDisplay detailed usage and status for cluster nodes.
-
-Other Commands:
   help  \tShow this message.
 
 "
