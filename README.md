@@ -51,7 +51,7 @@ Machine learning and big data workflows, like most, benefit from fast data acces
 ## Data 
 
 ### COVID-19 
-The first Blackbalsam instance is the RENCI COVID-19 platform. The data set aggregator for that instance can be seen [here](https://github.com/stevencox/blackbalsam-covid-19-data). Submit GitHub pull requests to that repository to request new data.
+The first Blackbalsam instance is the RENCI COVID-19 platform. Its data set aggregator is [here](https://github.com/stevencox/blackbalsam-covid-19-data). See the repository's description for information on how to request new data.
 
 A Kubernetes periodic task exectues the data repository update script hourly.
 
