@@ -151,34 +151,29 @@ Then, go to https://{your-domain}/blackbalsam/ to visit the application.
 For additional information on the command line management interface, see the help feature:
 ```
 $ bin/blackbalsam help
-bin/blackbalsam is a data science cluster architecture.
+bin/blackbalsam is the command line interface for a Blackbalsam data science cluster.
 
 User Experience Services:
-  hub   	Configure, install, and uninstall JupyterHub notebook server.
-  hub up	Start JupyterHub. Configure Ambassador, storage, etc. Also used to update the configuration.
-  hub down	Stop JupyterHub.
-  hub restart	Restart the JupyterHub service.
+  hub up	Install or update JupyterHub and associated proxy mappings, storage, etc.
+  hub down	Stop JupyterHub and remove related resources.
 
 Storage Services:
-  alluxio	Manage cluster deployment of Alluxio services.
-  alluxio up	Install Alluxio and distributed workers.
+  alluxio up	Install Alluxio services and distributed workers.
   alluxio down	Delete the Alluxio network.
-  minio 	Manage cluster deployment of the Minio S3 system.
-  minio up	Install Minio. Creates a service called 'minio'.
+  minio up	Install Minio S3 interface. Creates a service called 'minio'.
   minio down	Delete Minio.
 
 Proxy Services:
-  proxy 	Manage the programmable Ambassador edge proxy.
+  proxy up	Install the programmable Ambassador edge proxy.
+  proxy down	Uninstall the programmable Ambassador edge proxy.
 
 Data Services:
-  data  	Manage the data collection for this cluster.
-  data up	Install the periodic data update task.
+  data up	Install the periodic data update task for this cluster.
   data down	Delete the periodic data update task.
   data run	Run the periodic data update task now.
   data stop	Stop the running data update task if one exists
 
 Secrets:
-  secret	Manage secrets
   secret up	Create secrets based on environment conifguration.
   secret down	Delete created secrets.
   secret status	Show status of secrets.
