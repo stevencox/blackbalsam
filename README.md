@@ -150,12 +150,12 @@ Then, go to https://{your-domain}/blackbalsam/ to visit the application.
 ### Help
 For additional information on the command line management interface, see the help feature:
 ```
-$ bin/blackbalsam help
+$ bin/blackbalsam data help
 bin/blackbalsam is the command line interface for a Blackbalsam data science cluster.
 
-Each of these commands include up, down, status, and restart sub-commands.
+Each of these commands include up, down, status, and restart.
 
-  eg: bin/blackbalsam command [ up | down | status | restart ]
+  eg: bin/blackbalsam <command> [ up | down | status | restart ]
 
 User Experience Services:
   hub   	Manage the JupyterHub and associated proxy mappings, storage, etc.
@@ -168,12 +168,12 @@ Proxy Services:
   proxy 	Manage the programmable Ambassador edge proxy.
 
 Data Services:
-  data 	Install the periodic data update task for this cluster.
+  data   	Install the periodic data update task for this cluster.
   data run	Run the periodic data update task now.
   data stop	Stop the running data update task if one exists
 
 Secrets:
-  secret up	Manage secrets based on environment conifguration.
+  secret  	Manage secrets based on environment conifguration.
 
 General:
   up    	Execute configurations and start all services.
