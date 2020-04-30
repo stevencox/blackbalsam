@@ -86,6 +86,10 @@ secret () {
 	    kc get secrets/$secret_name -o=yaml
 	fi
     }
+    restart () {
+	down
+	up
+    }
     $*
 }
 #############################################################
@@ -176,7 +180,10 @@ hub () {
             echo deleting helm release $RELEASE
             helm delete $RELEASE --purge
         fi
-	#kubectl --namespace=$NAMESPACE delete -f $ETC/pvc/
+    }
+    status () {
+	query="{.items[?(@.metadata.labels.app=='jupyterhub')].metadata.name}"
+	kc describe pods $(kc get pods -o=jsonpath="$query")
     }
     restart () {
         down
@@ -208,10 +215,17 @@ proxy () {
     dashboard () {
 	wget --timestamping --quiet https://metriton.datawire.io/downloads/darwin/edgectl
 	chmod +x edgectl
-        endpoint_ip=$(kubectl \
-                          get svc -n $NAMESPACE \
-                          -o=jsonpath="{.items[?(@.metadata.name=='ambassador')].status.loadBalancer.ingress[0].ip}")
+	query="{.items[?(@.metadata.name=='ambassador')].status.loadBalancer.ingress[0].ip}"
+        endpoint_ip=$(kc get svc -o=jsonpath="$query")
         ./edgectl login --namespace=$NAMESPACE $endpoint_ip
+    }
+    status () {
+	query="{.items[?(@.metadata.labels['app\.kubernetes\.io/name']=='ambassador')].metadata.name}"
+	kc describe pods $(kc get pods -o=jsonpath="$query")
+    }
+    restart () {
+	down
+	up
     }
     $*
 }
@@ -242,6 +256,14 @@ minio () {
             helm delete --purge minio
         fi
     }
+    status () {
+	query="{.items[?(@.metadata.labels.app=='minio')].metadata.name}"
+	kc describe pods $(kc get pods -o=jsonpath="$query")
+    }
+    restart () {
+	down
+	up
+    }
     $*
 }
 #############################################################
@@ -250,16 +272,7 @@ minio () {
 ##
 #############################################################
 alluxio () {
-    up () {       
-        comment () {
-            # TODO - configure secrets for alluxio.
-    env:
-      - name: MINIO_ACCESS_KEY
-        valueFrom:
-          secretKeyRef:
-            name: blackbalsam-secrets
-            key: minio_access_key
-        }
+    up () {
 	echo installing alluxio...
         echo "Configuring and starting alluxio..."
         export ALLUXIO_MASTER_HOST=alluxio-master-0
@@ -291,6 +304,10 @@ alluxio () {
 		--recursive=true \
 		-f alluxio-k8s
     }
+    status () {
+	query="{.items[?(@.metadata.labels.app=='alluxio')].metadata.name}"
+	kc describe pods $(kc get pods -o=jsonpath="$query")
+    }
     restart () {
         down
         up
@@ -304,13 +321,14 @@ alluxio () {
 #############################################################
 neo4j () {
     up () {
-#	config=$ETC/neo4j/neo4j-deployment.yaml
-#	cp $config.template 
-#	yaml_set_val spec.template.spec.containers[0].env.valueFrom.secretKeyRef. $neo4j_password $config
 	kubectl --namespace $NAMESPACE apply -f etc/neo4j
     }
     down () {
 	kubectl --namespace $NAMESPACE delete -f etc/neo4j
+    }
+    status () {
+	query="{.items[?(@.metadata.labels.app=='neo4j')].metadata.name}"
+	kc describe pods $(kc get pods -o=jsonpath="$query")
     }
     restart () {
 	down
@@ -340,6 +358,15 @@ data () {
 	# Stop the running refresh job.
 	kubectl --namespace $NAMESPACE delete job/update-data
     }
+    status () {
+	query="{.items[?(@.metadata.name=='update-data-set')].metadata.name}"
+	kc describe cronjobs $(kc get pods -o=jsonpath="$query")
+    }
+    restart () {
+	stop
+	down
+	up
+    }
     $*
 }
 #############################################################
@@ -347,7 +374,7 @@ data () {
 ##  Manage the system as a whole.
 ##
 #############################################################
-SYSTEMS="secrets minio alluxio neo4j proxy hub"
+SYSTEMS="secrets minio alluxio proxy neo4j hub"
 up () {
     echo installing blackbalsam...
     for system in $SYSTEMS; do
@@ -431,49 +458,39 @@ init () {
 ##
 #############################################################
 help () {
-    help_message="\
-$0 is a data science cluster architecture.
+    printf "\
+$0 is the command line interface for a Blackbalsam data science cluster.
+
+Each of these commands include up, down, status, and restart sub-commands.
+
+  eg: bin/blackbalsam command [ up | down | status | restart ]
 
 User Experience Services:
-  hub   \tConfigure, install, and uninstall JupyterHub notebook server.
-  hub up\tStart JupyterHub. Configure Ambassador, storage, etc. Also used to update the configuration.
-  hub down\tStop JupyterHub.
-  hub restart\tRestart the JupyterHub service.
+  hub   \tManage the JupyterHub and associated proxy mappings, storage, etc.
 
 Storage Services:
-  alluxio\tManage cluster deployment of Alluxio services.
-  alluxio up\tInstall Alluxio and distributed workers.
-  alluxio down\tDelete the Alluxio network.
-  minio \tManage cluster deployment of the Minio S3 system.
-  minio up\tInstall Minio. Creates a service called 'minio'.
-  minio down\tDelete Minio.
+  alluxio \tManage Alluxio services and distributed workers.
+  minio \tManage Minio S3 interface. Creates a service called 'minio'.
 
 Proxy Services:
   proxy \tManage the programmable Ambassador edge proxy.
 
 Data Services:
-  data  \tManage the data collection for this cluster.
-  data up\tInstall the periodic data update task.
-  data down\tDelete the periodic data update task.
+  data \tInstall the periodic data update task for this cluster.
   data run\tRun the periodic data update task now.
   data stop\tStop the running data update task if one exists
 
 Secrets:
-  secret\tManage secrets
-  secret up\tCreate secrets based on environment conifguration.
-  secret down\tDelete created secrets.
-  secret status\tShow status of secrets.
+  secret up\tManage secrets based on environment conifguration.
 
 General:
   up    \tExecute configurations and start all services.
-  down  \tStop all cluster components and services.
+  down  \tStop all cluster services.
   restart\tStop and start all system components.
-  status\tReport on Kubernetes components of the system in detail.
+  status\tReport on Kubernetes components and system services in detail.
   nodes \tDisplay detailed usage and status for cluster nodes.
   help  \tShow this message.
-
 "
-    printf "$help_message"
 }
 
 init
