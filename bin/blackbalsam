@@ -98,7 +98,7 @@ secret () {
 ##
 #############################################################
 hub () {
-    conf () {
+    conf_deprecated () {
         mkdir -p $DIST
         wget --timestamping --quiet --directory-prefix=$DIST $helm_url
         if [ ! -d $DIST/darwin-amd64 ]; then
@@ -120,22 +120,22 @@ hub () {
             helm repo update
         fi
     }
-    jupyterhub_ready () {
+    jupyterhub_ready_deprecated () {
         kubectl get deployments \
                 --namespace=$NAMESPACE \
                 --selector app=jupyterhub,component=hub \
                 -o=jsonpath="{.items[?(@.metadata.labels.component=='hub')].status.readyReplicas}"
     }
-    wait () {
+    wait_deprecated () {
         while [[ ! "$(jupyterhub_ready)" == 1 ]]; do
             echo waiting
         done
     }
     up () {
 	echo installing jupyterhub
-        conf
+        #conf
         helm version
-	pvc
+	configure_pvc
         cp $ETC/hub/config.yaml.template config.yaml
 	yaml_set_val auth.github.clientId $github_client_id config.yaml
 	yaml_set_val auth.github.clientSecret $github_client_secret config.yaml
@@ -147,10 +147,10 @@ hub () {
              --namespace $NAMESPACE  \
              --version=$JHUB_VERSION \
              --values config.yaml
-        proxy
-        patch
+        configure_proxy
+        configure_patch
     }
-    pvc () {
+    configure_pvc () {
 	echo check for persistent volume claim...
 	pvc_exists=$(kubectl --namespace=$NAMESPACE get pvc | grep -c jhub-nfs-pvc || true)
 	if [ "$pvc_exists" == 0 ]; then
@@ -158,14 +158,14 @@ hub () {
 	    kubectl --namespace=$NAMESPACE apply -f $ETC/pvc/
 	fi
     }	
-    proxy () {
+    configure_proxy () {
 	if [ "$(kubectl get mapping | grep -c jupyter)" -eq 0 ]; then
             kubectl apply \
                     -f $ETC/ambassador/jupyterhub-ambassador-mapping.yaml \
                     --namespace=$NAMESPACE
 	fi
     }
-    patch () {
+    configure_patch () {
         # https://github.com/jupyterhub/kubespawner/issues/354        
         kubectl patch deploy \
                 --namespace $NAMESPACE hub \
@@ -197,6 +197,7 @@ hub () {
 ##
 #############################################################
 proxy () {
+    # Install w/o CRD and change Jupyter to use service annotations, if possible.
     up () {
 	echo installing ambassador...
         helm repo add datawire https://www.getambassador.io
@@ -457,13 +458,13 @@ init () {
 ##  Help.
 ##
 #############################################################
-help () {
+help () { 
     printf "\
 $0 is the command line interface for a Blackbalsam data science cluster.
 
-Each of these commands include up, down, status, and restart sub-commands.
+Each of these commands include up, down, status, and restart.
 
-  eg: bin/blackbalsam command [ up | down | status | restart ]
+  eg: bin/blackbalsam <command> [ up | down | status | restart ]
 
 User Experience Services:
   hub   \tManage the JupyterHub and associated proxy mappings, storage, etc.
@@ -476,12 +477,12 @@ Proxy Services:
   proxy \tManage the programmable Ambassador edge proxy.
 
 Data Services:
-  data \tInstall the periodic data update task for this cluster.
+  data   \tInstall the periodic data update task for this cluster.
   data run\tRun the periodic data update task now.
   data stop\tStop the running data update task if one exists
 
 Secrets:
-  secret up\tManage secrets based on environment conifguration.
+  secret  \tManage secrets based on environment conifguration.
 
 General:
   up    \tExecute configurations and start all services.
