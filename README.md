@@ -80,7 +80,7 @@ A Kubernetes periodic task exectues the data repository update script hourly.
 
 # Architecture
 The following figure depicts Blackbalsam's design at a high level.
-![image](https://user-images.githubusercontent.com/306971/80366500-610d1100-8857-11ea-962f-c006113fc7f3.png)
+![image](https://user-images.githubusercontent.com/306971/80694659-d0c30c00-8aa2-11ea-87be-13c4bb3c8ccf.png)
 
 ## Prerequisites
 
