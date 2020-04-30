@@ -79,7 +79,7 @@ The first Blackbalsam instance is the RENCI COVID-19 platform. See the descripti
 A Kubernetes periodic task exectues the data repository update script hourly.
 
 # Architecture
-The following figure depicts Blackbalsam's design at a high level.
+Blackbalsam's design composes widely used open source systems including Docker, Kubernetes, Apache Spark, Jupyter and JupyterHub into a coherent environment.
 ![image](https://user-images.githubusercontent.com/306971/80694659-d0c30c00-8aa2-11ea-87be-13c4bb3c8ccf.png)
 
 ## Prerequisites
