@@ -198,13 +198,15 @@ From [Wikipedia](https://en.wikipedia.org/wiki/Black_Balsam_Knob):
   * [ ] Configure and test Alluxio to Minio interfaces
   * [ ] Configure and test Alluxio to NFS interfaces
   * [ ] Configure and test Spark Alluxio interface
-* [ ] **Tools**: Track user demand to prioritize and incorporate new capabilities.
+* [ ] **Tools**: 
+  * [ ] Create and document notebooks with examples of key features
+  * [ ] Track user demand to prioritize and incorporate new capabilities.
 * [ ] **Infrastructure**:
-  * [ ] **Certificate**: Get trusted certificates for the site and a development instance.
-  * [ ] **Development**: Establish a blackbalsam-dev namespace for development testing.
-  * [ ] **Continuous Integration**: Crete an automated build and test pipeline.
-  * [ ] **Compute Fabric**: Purchase and deploy new hardware.
-  * [ ] **Deployment Model**: Move to Helm 3.
+  * [ ] Get trusted certificates for the site and a development instance.
+  * [ ] Establish a blackbalsam-dev namespace for development testing.
+  * [ ] Crete an automated build and test pipeline.
+  * [ ] Purchase and deploy new hardware.
+  * [ ] Move management tools to Helm 3.
 
 ![image](https://user-images.githubusercontent.com/306971/80296143-80684900-8746-11ea-9ad7-e2dc69d6d71f.png)
 
