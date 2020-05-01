@@ -188,7 +188,7 @@ From [Wikipedia](https://en.wikipedia.org/wiki/Black_Balsam_Knob):
 
 "Black Balsam Knob,[2] also known as Black Balsam Bald, is in the Pisgah National Forest southwest of Asheville, North Carolina, near milepost 420 on the Blue Ridge Parkway. It is the second highest mountain[3] in the Great Balsam Mountains. The Great Balsams are within the Blue Ridge Mountains, which are part of the Appalachian Mountains. It is the 23rd highest of the 40 mountains in North Carolina over 6000 feet.[4]"
 
-# Next:
+# Next
 
 * [ ] **AI & ML**: 
   * [ ] Debug and fix the JupyterHub on Kubernetes bug preventing the use of multiple notebook profiles.
