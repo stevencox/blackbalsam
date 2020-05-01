@@ -27,10 +27,10 @@
    
 ## Overview
 
-Blackbalsam's **interface** uses JupyterHub notebook environment featuring artificial intelligence, visualization, and scalable computing capabilities. For **computation**, integration of the Jupyter environment with Apache Spark and Kubernetes allows users to dynamically create personal Spark clusters with user specified attributes. These interface and compute capabilities are coupled to a tiered **storage** platform including networked filesystem access to COVID-19 data sets, the Mino S3 compatible object store, and the Alluxio distributed memory cache. The prototype runs at the [Renaissance Computing Institute](https://renci.org/) in an on premise cluster, is cloud ready, and is open source under the MIT License.
+Blackbalsam's **interface** uses a JupyterHub notebook environment featuring artificial intelligence, visualization, and scalable computing capabilities. For **computation**, integration of the Jupyter environment with Apache Spark and Kubernetes allows users to dynamically create personal Spark clusters with user specified attributes. Plans to incorporate GPU nodes to enable deep learning scenarios are under way. These interface and compute capabilities are coupled to a tiered **storage** platform including networked filesystem, the Mino S3 compatible object store, and the Alluxio distributed memory cache. These provide access to COVID-19 data sets. The prototype runs at the [Renaissance Computing Institute](https://renci.org/) in an on premise cluster, is cloud ready, and is open source under the MIT License.
 
 ### Authentication
-Access is provided via GitHub and OpenID Connect (OIDC). Whitelisted users can use their GitHub identity to login and start working immediately.
+Authentication is provided via GitHub and OpenID Connect (OIDC). Whitelisted users can use their GitHub identity to login and start working immediately.
 
 ### Artificial Intelligence & Analytics
 The Blackbalsam notebook includes Tensorflow, Keras, Gensim, PyTorch, scikit-learn, pandas, and numpy. Users can also easily create Spark clusters providing access to Spark's [MLlib](https://spark.apache.org/docs/latest/ml-guide.html) machine learning toolkit.
