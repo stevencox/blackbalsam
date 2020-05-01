@@ -23,7 +23,7 @@
          * [Executing the Install](#executing-the-install)
          * [Help](#help)
    * [About](#about)
-   * [Next](#next-steps)
+   * [Next](#next)
    
 ## Overview
 
