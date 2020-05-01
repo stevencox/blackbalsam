@@ -146,7 +146,7 @@ Note that this is still an alpha release! If you have questions, feel free to
 Then, go to https://{your-domain}/blackbalsam/ to visit the application.
 
 ### Help
-For additional information on the command line management interface, see the help feature:
+For information on the command line management interface, see the help option:
 ```
 $ bin/blackbalsam data help
 bin/blackbalsam is the command line interface for a Blackbalsam data science cluster.
