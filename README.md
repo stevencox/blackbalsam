@@ -113,9 +113,9 @@ Ensure you have kubectl configured to point to a Kubernetes cluster.
 Clone the repository. Create a virtual environment, populate the environment, and run the installer.
 ```
 git clone git@github.com:stevencox/blackbalsam.git
+python3 -m venv blackbbalsam-env
+source blackbalsam-env/bin/activate
 cd blackbalsam
-python3 -m venv ../blackbbalsam
-source ../blackbalsam/bin/activate
 bin/blackbalsam up
 ```
 
