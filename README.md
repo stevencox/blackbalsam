@@ -190,12 +190,21 @@ From [Wikipedia](https://en.wikipedia.org/wiki/Black_Balsam_Knob):
 
 # Next:
 
-* [ ] **AI & ML**: The current cluster does not have GPUs. Fixing that is partially a matter of purchasing and configuring hardware. But limitations in JupyterHub's support for multi-profile environments on Kubernetes will require us to research alternatives for deploying multiple notebook types effectively in this context.
-* [ ] **Persistence**: Further testing and integration of Alluxion and S3 interfaces with Spark is needed. S3 and NFS persistence mechanisms are relatively robust but Alluxio integration remains untested.
-* [ ] **Tools**: Incorporate additional tools and libraries by tracking user demand.
+* [ ] **AI & ML**: 
+  * [ ] Debug and fix the JupyterHub on Kubernetes bug preventing the use of multiple notebook profiles.
+  * [ ] Create a separate AI notebook and configure GPU targeting.
+  * [ ] Purchase and integrate GPU hardware.
+* [ ] **Persistence**: 
+  * [ ] Configure and test Alluxio to Minio interfaces
+  * [ ] Configure and test Alluxio to NFS interfaces
+  * [ ] Configure and test Spark Alluxio interface
+* [ ] **Tools**: Track user demand to prioritize and incorporate new capabilities.
 * [ ] **Infrastructure**:
-  * [ ] **Certificate**: We need a real certificate for the site.
-  * [ ] **Deployment Model**: Improvements are ongoing in the areas of secret management, continuous integration, testing, and application of Helm.
+  * [ ] **Certificate**: Get trusted certificates for the site and a development instance.
+  * [ ] **Development**: Establish a blackbalsam-dev namespace for development testing.
+  * [ ] **Continuous Integration**: Crete an automated build and test pipeline.
+  * [ ] **Compute Fabric**: Purchase and deploy new hardware.
+  * [ ] **Deployment Model**: Move to Helm 3.
 
 ![image](https://user-images.githubusercontent.com/306971/80296143-80684900-8746-11ea-9ad7-e2dc69d6d71f.png)
 
