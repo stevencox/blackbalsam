@@ -37,7 +37,7 @@ Data Science is impeded by operatoinal obstacles we can address. The discipline 
 * **Sharing**: Living in the cloud has acclimatized many of us to instant messaging a URL to a coworker many times a day. In prior times, email and installing software locally was the norm. When one person creates an interesting analysis, it should be possible to message a collaborator with a URL to that analysis.
 * **Scale**: Setting up an analysis on one's laptop is very good but training machine learning models and analyzing large data sets increasingly requires computational scale, access to specialized hardware and accelerators, and the modern tools to access that scale.
 
-Blackbalsam was developed to assemble a pragmatic digital data science laboratory.
+Blackbalsam was developed to assemble a pragmatic digital data science laboratory to meet those needs.
 
 ### Implementation Overview
 
