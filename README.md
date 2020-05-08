@@ -27,6 +27,18 @@
    
 ## Overview
 
+### Motivation
+
+Data Science is impeded by operatoinal obstacles we can address. The discipline draws on numerous skill set but not everyone has all of the skills, and not everyone has those skills in the same degree. Once someone has created an interesting result, asking a collaborator to laboriously reproduce the steps the first researcher took is lost time. Similarly, each participant in a team needing to acquire the same data set is a source of error and a waste of time. In view of these realities, ready availability of tools and data in a common digital environment accomplishes a number of aims simultaneously:
+
+* **Digital Lab**: It creates a digital laboratory so that each individual is not posed with the obstacle of assembling all the required computational and data instruments themselves from scratch.
+* **Sharing**: Living in the cloud has acclimatized many of us to instant messaging a URL to a coworker many times a day. In prior times, email and installing software locally was the norm. When one person creates an interesting analysis, it should be possible to message a collaborator with a URL to that analysis.
+* **Scale**: Setting up an analysis on one's laptop is very good but training machine learning models and analyzing large data sets increasingly requires computational scale, access to specialized hardware and accelerators, and the modern tools to access that scale.
+
+Blackbalsam was developed to assemble a pragmatic digital data science laboratory.
+
+### Implementation Overview
+
 Blackbalsam's **interface** uses a JupyterHub notebook environment featuring artificial intelligence, visualization, and scalable computing capabilities. For **computation**, integration of the Jupyter environment with Apache Spark and Kubernetes allows users to dynamically create personal Spark clusters with user specified attributes. Plans to incorporate GPU nodes to enable deep learning scenarios are under way. These interface and compute capabilities are coupled to a tiered **storage** platform including networked filesystem, the Mino S3 compatible object store, and the Alluxio distributed memory cache. These provide access to COVID-19 data sets. The prototype runs at the [Renaissance Computing Institute](https://renci.org/) in an on premise cluster, is cloud ready, and is open source under the MIT License.
 
 ### Authentication
