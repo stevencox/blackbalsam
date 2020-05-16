@@ -11,18 +11,18 @@
 # See the NOTICE file distributed with this work for information regarding copyright ownership.
 #
 
-kind: PersistentVolume
-apiVersion: v1
-metadata:
-  name: alluxio-journal-volume
-  labels:
-    type: local
-spec:
-  storageClassName: ssd
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteMany
-  hostPath:
-    path: "/nfs"
+#kind: PersistentVolume
+#apiVersion: v1
+#metadata:
+#  name: alluxio-journal-volume
+#  labels:
+#    type: local
+#spec:
+#  storageClassName: ssd
+#  capacity:
+#    storage: 1Gi
+#  accessModes:
+#    - ReadWriteMany
+#  hostPath:
+#    path: "/nfs"
 

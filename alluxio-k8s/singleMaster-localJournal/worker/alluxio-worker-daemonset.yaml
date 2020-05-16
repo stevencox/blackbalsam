@@ -132,7 +132,8 @@ spec:
       volumes:
         - name: alluxio-journal
           persistentVolumeClaim:
-            claimName: alluxio-journal-alluxio-master-0
+#            claimName: alluxio-journal-alluxio-master-0
+            claimName: $NFS_PVC
         - name: alluxio-domain
           hostPath:
             path: /tmp/alluxio-domain

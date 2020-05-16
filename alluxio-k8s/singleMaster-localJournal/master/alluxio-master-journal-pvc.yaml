@@ -11,15 +11,15 @@
 # See the NOTICE file distributed with this work for information regarding copyright ownership.
 #
 
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: alluxio-journal-alluxio-master-0
-spec:
-  storageClassName: ssd
-  accessModes:
-    - ReadWriteMany
-  resources:
-    requests:
-      storage: "1Gi"
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: alluxio-journal-alluxio-master-0
+#spec:
+#  storageClassName: ssd
+#  accessModes:
+#    - ReadWriteMany
+#  resources:
+#    requests:
+#      storage: "1Gi"
 

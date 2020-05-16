@@ -13,21 +13,17 @@
 ##    Storage: NFS / Minio & S3 / Alluxio
 ## 
 #############################################################
-set -e #x
+set -ex
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 BLACKBALSAM_HOME=$( dirname $DIR )
 
+export NAMESPACE=${NAMESPACE:-helx-dev}
 export RELEASE=blackbalsam
-export NAMESPACE=$RELEASE
 export JHUB_VERSION=0.8.2
 export DIST=$BLACKBALSAM_HOME/bin
 export ETC=$BLACKBALSAM_HOME/etc
-export PATH=$DIST/darwin-amd64:$PATH
-export NFS_PVC=blackbalsam-jhub-nfs-pvc
-# TODO: This is OSX specific. Fix.
-export helm_dist=helm-v2.16.3-darwin-amd64.tar.gz
-export helm_url=https://get.helm.sh/$helm_dist
+export NFS_PVC=stdnfs
 
 #############################################################
 ##
@@ -51,6 +47,43 @@ yaml_set_val () {
         --value=$2 \
         -F dquote \
         $3
+}
+pvc () {
+    pvc_name=$NFS_PVC
+    pvc_config=$ETC/pvc
+    query="{.items[?(@.metadata.name=='"$pvc_name"')].metadata.name}"
+    pvc_exists=$(kc get pvc -o=jsonpath="$query" | grep -c $pvc_name || true)
+    up () {
+	#echo check for persistent volume claim...	
+	#pvc_exists=$(kubectl --namespace=$NAMESPACE get pvc | grep -c jhub-nfs-pvc || true)
+	if [ "$pvc_exists" -eq 0 ]; then
+	    echo install persistent volume claim...
+	    kc apply -f $pvc_config
+	else
+	    echo pvc $pvc_name already exists
+	fi
+    }    
+    status () {
+	if [ "$pvc_exists" -eq 0 ]; then
+	    echo pvc $pvc_name not found.
+	else
+	    kc get pvc/$pvc_name -o=yaml
+	fi
+    }
+    down () {
+	#pvc_exists=$(kubectl --namespace=$NAMESPACE get pvc | grep -c jhub-nfs-pvc || true)
+	if [ "$pvc_exists" -eq 0 ]; then
+	    echo pvc $pvc_name does not exist
+	else
+	    echo deleting pvc $pvc_name...
+	    kc delete -f $pvc_config
+	fi
+    }
+    restart () {
+	down
+	up
+    }
+    $*
 }
 secret () {
     secret_name=blackbalsam-secrets
@@ -92,50 +125,23 @@ secret () {
     }
     $*
 }
+make_account () {
+    kubectl delete --ignore-not-found=true --namespace=$NAMESPACE serviceaccount spark
+    kubectl delete --ignore-not-found=true --namespace=$NAMESPACE clusterrolebinding spark-role
+    kubectl create --namespace=$NAMESPACE serviceaccount spark
+    kubectl create --namespace=$NAMESPACE \
+            clusterrolebinding spark-role --clusterrole=edit \
+            --serviceaccount=$NAMESPACE:spark
+}
 #############################################################
 ##
 ##  Manage JupyterHub.
 ##
 #############################################################
 hub () {
-    conf_deprecated () {
-        mkdir -p $DIST
-        wget --timestamping --quiet --directory-prefix=$DIST $helm_url
-        if [ ! -d $DIST/darwin-amd64 ]; then
-            pushd $DIST
-            tar xvzf $helm_dist
-            popd
-        fi
-        if [ "$(kubectl get serviceaccount -n kube-system tiller -o yaml | grep -c tiller)" == 0 ]; then
-            kubectl --namespace kube-system create serviceaccount tiller
-            kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-            helm init --service-account tiller --history-max 100 --wait
-            kubectl patch \
-		    deployment \
-		    tiller-deploy \
-                    --namespace=kube-system --type=json \
-                    --patch='[{"op": "add", "path": "/spec/template/spec/containers/0/command", "value": ["/tiller", "--listen=localhost:44134"]}]'
-            helm version
-            helm repo add jupyterhub https://jupyterhub.github.io/helm-chart/
-            helm repo update
-        fi
-    }
-    jupyterhub_ready_deprecated () {
-        kubectl get deployments \
-                --namespace=$NAMESPACE \
-                --selector app=jupyterhub,component=hub \
-                -o=jsonpath="{.items[?(@.metadata.labels.component=='hub')].status.readyReplicas}"
-    }
-    wait_deprecated () {
-        while [[ ! "$(jupyterhub_ready)" == 1 ]]; do
-            echo waiting
-        done
-    }
     up () {
 	echo installing jupyterhub
-        #conf
         helm version
-	configure_pvc
         cp $ETC/hub/config.yaml.template config.yaml
 	yaml_set_val auth.github.clientId $github_client_id config.yaml
 	yaml_set_val auth.github.clientSecret $github_client_secret config.yaml
@@ -147,17 +153,9 @@ hub () {
              --namespace $NAMESPACE  \
              --version=$JHUB_VERSION \
              --values config.yaml
-        configure_proxy
+        #configure_proxy
         configure_patch
     }
-    configure_pvc () {
-	echo check for persistent volume claim...
-	pvc_exists=$(kubectl --namespace=$NAMESPACE get pvc | grep -c jhub-nfs-pvc || true)
-	if [ "$pvc_exists" == 0 ]; then
-	    echo install persistent volume claim...
-	    kubectl --namespace=$NAMESPACE apply -f $ETC/pvc/
-	fi
-    }	
     configure_proxy () {
 	if [ "$(kubectl get mapping | grep -c jupyter)" -eq 0 ]; then
             kubectl apply \
@@ -178,7 +176,7 @@ hub () {
         helm version
         if [[ "$(helm ls | grep -v NAME | grep -c jupyterhub)" -gt 0 ]]; then
             echo deleting helm release $RELEASE
-            helm delete $RELEASE --purge
+            helm delete $RELEASE
         fi
     }
     status () {
@@ -191,6 +189,23 @@ hub () {
     }
     $*
 }
+helx () {
+    if [ ! -d devops ]; then
+	git clone https://github.com/helxplatform/devops.git
+	cp $ETC/helx/charts/nginx/values.yaml devops/helx/charts/nginx
+    fi
+    up () {
+	cd devops
+	helm install helx helx/ -n $NAMESPACE
+	cd ..
+    }
+    down () {
+	cd devops
+	helm delete helx -n $NAMESPACE
+	cd ..
+    }
+    $*
+}
 #############################################################
 ##
 ##  Manage the software defined reverse proxy.
@@ -200,13 +215,12 @@ proxy () {
     # Install w/o CRD and change Jupyter to use service annotations, if possible.
     up () {
 	echo installing ambassador...
-        helm repo add datawire https://www.getambassador.io
-        helm install --name ambassador --namespace $NAMESPACE --set service.loadBalancerIP=$public_ip datawire/ambassador 
+        helm install ambassador --namespace $NAMESPACE --set service.loadBalancerIP=$public_ip datawire/ambassador 
     }
     down () {
 	echo uninstalling ambassador...
         if [[ "$(helm ls | grep -v NAME | grep -c ambassador)" == 1 ]]; then
-            helm delete ambassador --purge
+            helm delete ambassador
         fi
         for crd in $(kubectl get customresourcedefinitions | grep ambassador | awk '{ print $1  }'); do
 	    echo delelting ambassador customresourcedefinitions...
@@ -242,11 +256,10 @@ minio () {
             echo == WARNING ==: A minio release is already installed.
         else
             secret_name=$(secret name)
-            helm install \
+            helm install minio \
                  --set existingSecret=$secret_name \
 		 --set persistence.existingClaim=$NFS_PVC \
 		 --set persistence.subPath=minio \
-                 --name minio \
                  --namespace $NAMESPACE \
                  stable/minio
         fi
@@ -254,7 +267,7 @@ minio () {
     down () {
 	echo uninstalling minio...
         if [[ "$(helm ls | grep -v NAME | awk '{ print $1 }' | grep -c minio)" == 1 ]]; then
-            helm delete --purge minio
+            helm delete minio
         fi
     }
     status () {
@@ -284,12 +297,22 @@ alluxio () {
         export MINIO_ACCESS_KEY=$minio_access_key
         export MINIO_SECRET_KEY=$minio_secret_key
         export alluxio_conf="./tmp/alluxio-k8s/singleMaster-localJournal/alluxio-configmap.yaml"
-
+	export alluxio_statefulset_conf="./tmp/alluxio-k8s/singleMaster-localJournal/master/alluxio-master-statefulset.yaml"
+        export alluxio_daemonset_conf="./tmp/alluxio-k8s/singleMaster-localJournal/worker/alluxio-worker-daemonset.yaml"
+	
 	echo copying alluxio config templates...
 	mkdir -p tmp
 	cp -r alluxio-k8s ./tmp
-
 	envsubst < ${alluxio_conf}.template > $alluxio_conf
+	envsubst < ${alluxio_statefulset_conf}.template > $alluxio_statefulset_conf
+	envsubst < ${alluxio_daemonset_conf}.template > $alluxio_daemonset_conf
+	find ./tmp -name "*.template" -print | xargs rm
+	x () {
+	cat $alluxio_conf
+	cat $alluxio_statefulset_conf
+	cat $alluxio_daemonset_conf 
+	exit 0
+	}
         echo "  configured. creating kubernetes artifacts."
         kubectl apply \
 		--namespace $NAMESPACE \
@@ -325,7 +348,7 @@ neo4j () {
 	kubectl --namespace $NAMESPACE apply -f etc/neo4j
     }
     down () {
-	kubectl --namespace $NAMESPACE delete -f etc/neo4j
+	kubectl --namespace $NAMESPACE --ignore-not-found=true delete -f etc/neo4j
     }
     status () {
 	query="{.items[?(@.metadata.labels.app=='neo4j')].metadata.name}"
@@ -345,25 +368,27 @@ neo4j () {
 data () {
     up () {
 	# Create the updater.
-	kubectl --namespace $NAMESPACE apply -f etc/data/updater
+	kc apply -f etc/data/updater
     }
     down () {
 	# Delete the udpater.
-	kubectl --namespace $NAMESPACE delete -f etc/data/updater
+	kc delete -f etc/data/updater
     }
     run () {
 	# Run a refresh job now.
-	kubectl --namespace $NAMESPACE create job --from=cronjob/update-data-set update-data
+	kc create job --from=cronjob/update-data-set update-data
     }
     stop () {
 	# Stop the running refresh job.
-	kubectl --namespace $NAMESPACE delete job/update-data
+	kc delete job/update-data
     }
     status () {
+	# Get status
 	query="{.items[?(@.metadata.name=='update-data-set')].metadata.name}"
 	kc describe cronjobs $(kc get pods -o=jsonpath="$query")
     }
     restart () {
+	# Restart the data service
 	stop
 	down
 	up
@@ -375,7 +400,8 @@ data () {
 ##  Manage the system as a whole.
 ##
 #############################################################
-SYSTEMS="secrets minio alluxio proxy neo4j hub"
+SYSTEMS="secret pvc minio alluxio proxy neo4j hub"
+SYSTEMS="secret pvc minio alluxio helx neo4j hub"
 up () {
     echo installing blackbalsam...
     for system in $SYSTEMS; do
@@ -389,7 +415,7 @@ down () {
     for system in $reversed; do
         $system down
     done
-    kubectl delete --ignore-not-found=true namespace $NAMESPACE
+    #kubectl delete --ignore-not-found=true namespace $NAMESPACE
 }
 restart () {
     echo "restarting blackbalsam"
@@ -420,35 +446,11 @@ init () {
         exit 1
     fi
     source $HOME/.blackbalsam
-    tiller_status=$(kubectl \
-			get deployment -n kube-system \
-			-o=jsonpath="{.items[?(@.metadata.labels.name=='tiller')].metadata.labels.name}" | \
-			grep -c tiller)
-
-    if [ $tiller_status -eq 1 ]; then
-	return 
-    fi
-    echo installing tiller...
-    mkdir -p $DIST
-
-    wget --timestamping --quiet --directory-prefix=$DIST $helm_url
-    if [ ! -d $DIST/darwin-amd64 ]; then
-        pushd $DIST
-        tar xvzf $helm_dist
-        popd
-    fi
-    if [ "$(kubectl get serviceaccounts -n kube-system | grep -c tiller)" == 0 ]; then
-        kubectl --namespace kube-system create serviceaccount tiller
-    fi
-    if [ "$(kubectl get clusterrolebinding | grep -c tiller)" == 0 ]; then
-        kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
-    fi
-    helm init --service-account tiller --history-max 100 --wait
-    kubectl patch deployment tiller-deploy \
-            --namespace=kube-system --type=json \
-            --patch='[{"op": "add", "path": "/spec/template/spec/containers/0/command", "value": ["/tiller", "--listen=localhost:44134"]}]'
-
+}
+configure () {
     helm version
+    helm repo add stable https://kubernetes-charts.storage.googleapis.com
+    helm repo add datawire https://www.getambassador.io
     helm repo add jupyterhub https://jupyterhub.github.io/helm-chart/
     helm repo update
 }
